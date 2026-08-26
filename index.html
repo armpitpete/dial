@@ -44,16 +44,16 @@
       <div id="preset-buttons" class="preset-grid" aria-label="Preset stations"></div>
 
       <form id="save-preset-form" class="save-form">
-        <label for="preset-number">Save current station to preset</label>
-        <select id="preset-number" name="preset">
-          <option value="1">Preset 1</option>
-          <option value="2">Preset 2</option>
-          <option value="3">Preset 3</option>
-          <option value="4">Preset 4</option>
-          <option value="5">Preset 5</option>
-          <option value="6">Preset 6</option>
-        </select>
-        <button type="submit">Save station</button>
+        <span id="save-preset-label">Save current station to preset</span>
+        <input id="preset-number" name="preset" type="hidden" value="1">
+        <div class="preset-grid" role="group" aria-labelledby="save-preset-label">
+          <button type="submit" onclick="document.getElementById('preset-number').value='1'">Save to 1</button>
+          <button type="submit" onclick="document.getElementById('preset-number').value='2'">Save to 2</button>
+          <button type="submit" onclick="document.getElementById('preset-number').value='3'">Save to 3</button>
+          <button type="submit" onclick="document.getElementById('preset-number').value='4'">Save to 4</button>
+          <button type="submit" onclick="document.getElementById('preset-number').value='5'">Save to 5</button>
+          <button type="submit" onclick="document.getElementById('preset-number').value='6'">Save to 6</button>
+        </div>
       </form>
     </section>
 
