@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DIAL — Blind-first internet radio</title>
+  <meta name="description" content="DIAL is a simple blind-first internet radio built around tuning, presets, memory, and WebMCP.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#radio">Skip to radio</a>
+
+  <main id="radio" class="shell">
+    <header class="header">
+      <p class="eyebrow">Blind-first internet radio</p>
+      <h1>DIAL</h1>
+      <p class="tagline">Tune by listening, not looking.</p>
+    </header>
+
+    <section class="now" aria-labelledby="now-heading">
+      <h2 id="now-heading">Now tuned</h2>
+      <p id="station-name" class="station-name">Groove Salad</p>
+      <p id="station-description" class="station-description">Ambient and downtempo beats.</p>
+      <p id="playback-state" class="state">Stopped</p>
+    </section>
+
+    <section class="controls" aria-label="Radio controls">
+      <button id="play-button" type="button">Play</button>
+      <button id="previous-button" type="button">Previous station</button>
+      <button id="next-button" type="button">Next station</button>
+      <button id="back-button" type="button" disabled>Back</button>
+    </section>
+
+    <section class="shuffle" aria-labelledby="shuffle-heading">
+      <h2 id="shuffle-heading">Shuffle</h2>
+      <div class="controls">
+        <button id="shuffle-presets-button" type="button">Shuffle presets</button>
+        <button id="shuffle-all-button" type="button">Shuffle all stations</button>
+      </div>
+    </section>
+
+    <section class="presets" aria-labelledby="presets-heading">
+      <h2 id="presets-heading">Presets</h2>
+      <div id="preset-buttons" class="preset-grid" aria-label="Preset stations"></div>
+
+      <form id="save-preset-form" class="save-form">
+        <label for="preset-number">Save current station to preset</label>
+        <select id="preset-number" name="preset">
+          <option value="1">Preset 1</option>
+          <option value="2">Preset 2</option>
+          <option value="3">Preset 3</option>
+          <option value="4">Preset 4</option>
+          <option value="5">Preset 5</option>
+          <option value="6">Preset 6</option>
+        </select>
+        <button type="submit">Save station</button>
+      </form>
+    </section>
+
+    <details class="help">
+      <summary>Keyboard shortcuts</summary>
+      <dl>
+        <div><dt>Space</dt><dd>Play or stop</dd></div>
+        <div><dt>Left / Right</dt><dd>Previous or next station</dd></div>
+        <div><dt>1–6</dt><dd>Play preset</dd></div>
+        <div><dt>Shift + 1–6</dt><dd>Save current station to preset</dd></div>
+        <div><dt>S</dt><dd>Shuffle presets</dd></div>
+        <div><dt>A</dt><dd>Shuffle all stations</dd></div>
+        <div><dt>B</dt><dd>Back to previous station</dd></div>
+        <div><dt>I</dt><dd>Announce current station</dd></div>
+      </dl>
+    </details>
+
+    <p id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+
+    <footer>
+      <p>Demo catalogue uses public SomaFM streams. Presets stay on this device.</p>
+    </footer>
+  </main>
+
+  <audio id="audio" preload="none"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
