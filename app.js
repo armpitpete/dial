@@ -348,7 +348,8 @@
   }
 
   async function registerWebMCPTools() {
-    if (!document.modelContext || typeof document.modelContext.registerTool !== "function") {
+    const modelContext = document.modelContext || navigator.modelContext;
+    if (!modelContext || typeof modelContext.registerTool !== "function") {
       return;
     }
 
@@ -455,7 +456,7 @@
 
     for (const tool of tools) {
       try {
-        await document.modelContext.registerTool(tool);
+        await modelContext.registerTool(tool);
       } catch (error) {
         console.warn(`DIAL WebMCP tool registration failed: ${tool.name}`, error);
       }
