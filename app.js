@@ -6,73 +6,73 @@
       id: "groovesalad",
       name: "Groove Salad",
       description: "Ambient and downtempo beats.",
-      stream: "https://ice.somafm.com/groovesalad"
+      stream: "https://ice5.somafm.com/groovesalad-128-mp3"
     },
     {
       id: "dronezone",
       name: "Drone Zone",
       description: "Atmospheric ambient textures with minimal beats.",
-      stream: "https://ice.somafm.com/dronezone"
+      stream: "https://ice5.somafm.com/dronezone-128-mp3"
     },
     {
       id: "secretagent",
       name: "Secret Agent",
       description: "Cinematic lounge, spy themes, and stylish instrumentals.",
-      stream: "https://ice.somafm.com/secretagent"
+      stream: "https://ice5.somafm.com/secretagent-128-mp3"
     },
     {
       id: "indiepop",
       name: "Indie Pop Rocks!",
       description: "Independent pop and rock.",
-      stream: "https://ice.somafm.com/indiepop"
+      stream: "https://ice5.somafm.com/indiepop-128-mp3"
     },
     {
       id: "deepspaceone",
       name: "Deep Space One",
       description: "Deep ambient electronic and space music.",
-      stream: "https://ice.somafm.com/deepspaceone"
+      stream: "https://ice5.somafm.com/deepspaceone-128-mp3"
     },
     {
       id: "spacestation",
       name: "Space Station Soma",
       description: "Spaced-out ambient and mid-tempo electronica.",
-      stream: "https://ice.somafm.com/spacestation"
+      stream: "https://ice5.somafm.com/spacestation-128-mp3"
     },
     {
       id: "u80s",
       name: "Underground 80s",
       description: "Early 1980s synthpop and new wave.",
-      stream: "https://ice.somafm.com/u80s"
+      stream: "https://ice5.somafm.com/u80s-128-mp3"
     },
     {
       id: "folkfwd",
       name: "Folk Forward",
       description: "Indie folk, alternative folk, and occasional classics.",
-      stream: "https://ice.somafm.com/folkfwd"
+      stream: "https://ice5.somafm.com/folkfwd-128-mp3"
     },
     {
       id: "sonicuniverse",
       name: "Sonic Universe",
       description: "Eclectic and avant-garde jazz.",
-      stream: "https://ice.somafm.com/sonicuniverse"
+      stream: "https://ice5.somafm.com/sonicuniverse-128-mp3"
     },
     {
       id: "reggae",
       name: "Heavyweight Reggae",
       description: "Reggae, ska, and rocksteady.",
-      stream: "https://ice.somafm.com/reggae"
+      stream: "https://ice5.somafm.com/reggae-128-mp3"
     },
     {
       id: "missioncontrol",
       name: "Mission Control",
       description: "Space-themed music celebrating NASA and exploration.",
-      stream: "https://ice.somafm.com/missioncontrol"
+      stream: "https://ice5.somafm.com/missioncontrol-128-mp3"
     },
     {
       id: "7soul",
       name: "Seven Inch Soul",
       description: "Vintage soul from original 45 RPM records.",
-      stream: "https://ice.somafm.com/7soul"
+      stream: "https://ice5.somafm.com/7soul-128-mp3"
     }
   ];
 
