@@ -34,6 +34,17 @@
     if (next !== descriptionElement.textContent.trim()) descriptionElement.textContent = next;
   }
 
+  function syncPresets(documentRef) {
+    const container = documentRef.getElementById("preset-buttons");
+    if (!container) return;
+    for (const button of container.querySelectorAll("button")) {
+      const text = button.textContent.trim();
+      button.classList.toggle("long-preset-name", text.length > LONG_NAME_THRESHOLD);
+      if (text) button.title = text;
+      else button.removeAttribute("title");
+    }
+  }
+
   function install(documentRef) {
     if (!documentRef) return null;
     const watchedIds = [
@@ -41,13 +52,15 @@
       "discovery-name",
       "discovery-description",
       "library-name",
-      "library-description"
+      "library-description",
+      "preset-buttons"
     ];
 
     const sync = () => {
       syncName(documentRef.getElementById("station-name"));
       syncPair(documentRef, "discovery-name", "discovery-description");
       syncPair(documentRef, "library-name", "library-description");
+      syncPresets(documentRef);
     };
 
     sync();
