@@ -16,6 +16,13 @@ test('locale inference uses an explicit region and does not guess one', () => {
   assert.equal(Browse.inferRegion('en'), '');
 });
 
+test('quick country and language choices are intentionally bounded', () => {
+  assert.equal(Browse.COUNTRY_CHOICES[0], 'United Kingdom');
+  assert.ok(Browse.COUNTRY_CHOICES.includes('Japan'));
+  assert.ok(Browse.LANGUAGE_CHOICES.includes('English'));
+  assert.ok(Browse.LANGUAGE_CHOICES.includes('Japanese'));
+});
+
 test('country names are usable Radio Browser country queries', () => {
   assert.equal(Browse.countryName('GB', 'en'), 'United Kingdom');
   assert.equal(Browse.countryName('DE', 'en'), 'Germany');
@@ -55,11 +62,14 @@ test('page contains optional start choices and browse routes', () => {
   assert.match(html, /id="start-world"/);
   assert.match(html, /id="start-surprise"/);
   assert.match(html, /id="start-skip"/);
-  assert.match(html, /data-search-kind="country"/);
-  assert.match(html, /data-search-kind="language"/);
+  assert.match(html, /id="browse-country"/);
+  assert.match(html, /id="country-panel"/);
+  assert.match(html, /id="browse-language"/);
+  assert.match(html, /id="language-panel"/);
   assert.match(html, /data-search-kind="name"/);
   assert.match(html, /id="browse-genre"/);
   assert.match(html, /id="browse-continent"/);
+  assert.match(html, /Suggested countries in selected continent/);
   assert.match(html, /id="recent-choices"/);
   assert.ok(html.indexOf('src="browse.js"') > html.indexOf('src="app.js"'));
 });
