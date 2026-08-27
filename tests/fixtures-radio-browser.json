@@ -1,0 +1,12 @@
+[
+  {
+    "stationuuid": "fixture-ambient-1",
+    "name": "Fixture Ambient",
+    "url_resolved": "https://example.invalid/ambient.mp3",
+    "country": "United Kingdom",
+    "language": "english",
+    "tags": "ambient,experimental",
+    "codec": "MP3",
+    "bitrate": 128
+  }
+]
