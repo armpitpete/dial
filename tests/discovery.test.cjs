@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const { BUILT_IN_STATIONS, normalizeStation, normalizeRadioBrowserStation, builtInByLegacyId, stationSummary } = require("../stations.js");
-const { normalizeSearchTerm, buildSearchUrl, searchStations } = require("../discovery.js");
+const { normalizeSearchTerm, normalizeFilters, buildSearchUrl, searchStations } = require("../discovery.js");
 
 test("built-in stations use canonical persistent records", () => {
   assert.equal(BUILT_IN_STATIONS.length, 12);
@@ -68,6 +68,47 @@ test("genre and language directory terms are normalized to lowercase", () => {
   assert.equal(normalizeSearchTerm("United Kingdom", "country"), "United Kingdom");
   const url = new URL(buildSearchUrl("https://example.test", "Electronic", "tag", 20));
   assert.equal(url.searchParams.get("tag"), "electronic");
+});
+
+test("country genre language and name filters combine in one directory request", () => {
+  assert.deepEqual(normalizeFilters({
+    country: "United Kingdom",
+    tag: "Electronic",
+    language: "English",
+    name: "Dance"
+  }), {
+    country: "United Kingdom",
+    tag: "electronic",
+    language: "english",
+    name: "Dance"
+  });
+  const url = new URL(buildSearchUrl("https://example.test", "Electronic", "tag", 20, {
+    country: "United Kingdom",
+    language: "English",
+    name: "Dance"
+  }));
+  assert.equal(url.searchParams.get("country"), "United Kingdom");
+  assert.equal(url.searchParams.get("tag"), "electronic");
+  assert.equal(url.searchParams.get("language"), "english");
+  assert.equal(url.searchParams.get("name"), "Dance");
+});
+
+test("discovery passes cumulative filters to the directory", async () => {
+  let requestedUrl = "";
+  const fetchImpl = async (url) => {
+    requestedUrl = url;
+    return { ok: true, async json() { return [{ stationuuid: "u1", name: "UK Electronic", url_resolved: "https://stream.test/one", country: "United Kingdom", tags: "electronic" }]; } };
+  };
+  const results = await searchStations("Electronic", "tag", {
+    fetchImpl,
+    roots: ["https://only.test"],
+    filters: { country: "United Kingdom", language: "English" }
+  });
+  const url = new URL(requestedUrl);
+  assert.equal(url.searchParams.get("country"), "United Kingdom");
+  assert.equal(url.searchParams.get("tag"), "electronic");
+  assert.equal(url.searchParams.get("language"), "english");
+  assert.equal(results[0].name, "UK Electronic");
 });
 
 test("discovery falls back to the next API mirror", async () => {
