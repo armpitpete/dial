@@ -6,6 +6,7 @@
   <title>DIAL — Blind-first internet radio</title>
   <meta name="description" content="DIAL is a blind-first internet radio for tuning, discovering, saving, and remembering stations.">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="volume.css">
 </head>
 <body>
   <a class="skip-link" href="#radio">Skip to radio</a>
@@ -44,6 +45,14 @@
       <button id="next-button" type="button">Next station</button>
       <button id="back-button" type="button" disabled>Back</button>
     </section>
+
+    <div class="volume-control" role="group" aria-labelledby="volume-label">
+      <div class="volume-heading">
+        <label id="volume-label" for="volume-slider">Volume</label>
+        <output id="volume-value" for="volume-slider">100%</output>
+      </div>
+      <input id="volume-slider" type="range" min="0" max="100" step="5" value="100" aria-describedby="volume-value">
+    </div>
 
     <section class="discovery" aria-labelledby="discovery-heading">
       <h2 id="discovery-heading">Find stations</h2>
@@ -212,6 +221,7 @@
   <script src="discovery.js"></script>
   <script src="library.js"></script>
   <script src="app.js"></script>
+  <script src="volume.js"></script>
   <script src="browse.js"></script>
   <script src="presentation.js"></script>
 </body>
