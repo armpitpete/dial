@@ -67,3 +67,5 @@ Exact-head candidate must pass automated validation and the following browser ch
 3. Confirm existing live-region search announcements still occur. **REMAINING SCREEN-READER ACCEPTANCE.**
 4. Confirm preset and Station Library persistence are unchanged. **Existing persistence behavior visually intact; no persistence code changed by this slice.**
 5. Confirm no account, geolocation permission, backend, or WebMCP expansion was introduced. **Automated/code review PASS.**
+
+Exact-head validation must be rerun after any evidence-only commit before merge authorization.
