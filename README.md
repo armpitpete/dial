@@ -2,73 +2,86 @@
 
 **Blind-first internet radio. Tune by listening, not looking.**
 
-This is the KISS MVP for DIAL.
+DIAL is a small, local-first internet radio designed around listening, keyboard operation, screen readers, persistent presets, station discovery, and WebMCP.
 
-## What is deliberately in v0.1
+## Current milestone: Station Discovery v0.2
+
+The fixed-catalogue MVP proved the core interaction. v0.2 turns DIAL into a real internet-radio navigator while keeping the architecture deliberately small.
+
+### Core radio
 
 - Play / stop
-- Previous / next station
+- Previous / next built-in station
 - Back to the previous station
 - Six persistent presets
-- Save current station to a preset
+- Save any current station to a preset
 - Shuffle presets
-- Shuffle all demo stations
+- Shuffle built-in stations
 - Keyboard-first controls
 - Screen-reader-friendly semantic HTML and `aria-live` status
 - WebMCP tools for the same radio actions
-- No framework
-- No build step
-- No account
-- No backend
 
-## What is deliberately NOT in v0.1
+### Station discovery
 
-- Recording
-- Live rewind/buffering
-- Scheduled recordings
-- Station-directory API
-- Recommendations
-- Accounts / sync
-- Speech recognition
-- Speech synthesis
-- Track metadata
-- Playlists
-- Social/sharing features
+- Search Radio Browser by station name, genre/tag, country, or language
+- Request entries marked working and exposing HTTPS streams
+- Inspect one result at a time instead of requiring a visual station grid
+- Previous / next search result
+- Play a discovered result
+- Save discovered stations directly into the six persistent presets
+- Preserve the full station record so discovered presets survive reloads
+- Fall back between Radio Browser mirrors if one API host fails
 
-Those wait until the basic radio passes hands-on listening and accessibility tests.
+Radio Browser is a discovery provider, not DIAL's identity. The built-in SomaFM catalogue remains the starter/fallback catalogue.
+
+## Station model
+
+Built-in, discovered, and persisted stations now share one record:
+
+```text
+uuid
+name
+streamUrl
+description
+country
+language
+tags
+codec
+bitrate
+source
+```
+
+Old `dial.presets.v1` built-in preset IDs are migrated into `dial.presets.v2` station records on first load.
 
 ## Run locally
-
-Any static HTTP server is enough:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open:
+Then open `http://localhost:8000`.
 
-```text
-http://localhost:8000
-```
-
-Opening `index.html` directly also works for the normal radio UI, but WebMCP requires a compatible secure/browser context.
+Opening `index.html` directly still works for the basic radio, but external discovery and WebMCP require an appropriate browser/network context.
 
 ## Keyboard
 
 - `Space` — play / stop
-- `Left` / `Right` — previous / next station
+- `Left` / `Right` — previous / next built-in station
 - `1`–`6` — play preset
 - `Shift` + `1`–`6` — save current station to preset
 - `S` — shuffle presets
-- `A` — shuffle all stations
+- `A` — shuffle built-in stations
 - `B` — back to previous station
 - `I` — announce current station
+- `F` — focus station search
+
+Search-result navigation also uses ordinary native controls, so Tab and Shift+Tab work without a special command vocabulary.
 
 ## WebMCP tools
 
-The app feature-detects `document.modelContext.registerTool()` and otherwise behaves as a normal web radio.
+DIAL feature-detects `document.modelContext` and the legacy `navigator.modelContext` surface.
 
-Registered tools:
+Core tools:
 
 - `get_radio_state`
 - `play_radio`
@@ -79,25 +92,50 @@ Registered tools:
 - `save_current_to_preset`
 - `go_back_station`
 
-## Demo station catalogue
+Discovery tools:
 
-The MVP uses public SomaFM direct stream URLs so there is no directory/API dependency during the first listening pass.
+- `search_radio_stations`
+- `get_search_results`
+- `play_search_result`
 
-For a real release, station-source terms and stream reliability need a dedicated review.
+## Validation
 
-## First acceptance gate
+No package install or build step is required.
 
-Do not add features until this passes:
+```bash
+node --check stations.js
+node --check discovery.js
+node --check app.js
+node --test tests/*.test.cjs
+```
 
-1. Open DIAL.
-2. Start playback with keyboard only.
-3. Tune next / previous without looking.
-4. Save a station to preset 4.
-5. Change stations.
+The pull-request workflow runs the same checks automatically.
+
+## v0.2 acceptance gate
+
+Starting with no knowledge of the built-in catalogue:
+
+1. Search for a station.
+2. Find a station that is not one of the built-in SomaFM stations.
+3. Listen to it.
+4. Save it to preset 4.
+5. Tune somewhere else.
 6. Return to preset 4.
-7. Shuffle presets.
-8. Use Back and return to the immediately previous station.
-9. Confirm every state change is understandable with a screen reader.
-10. In a WebMCP-capable browser, have an agent tune, save a preset, shuffle, and go back.
+7. Reload DIAL.
+8. Confirm preset 4 still restores the discovered station.
+9. Complete the sequence using keyboard and screen reader.
+10. Complete the equivalent discovery operation through WebMCP.
 
-Only after that: decide whether recording belongs in v0.2.
+Passing this gate establishes DIAL as a genuine internet-radio product rather than a fixed demonstration catalogue.
+
+## Deliberately deferred
+
+- General station library beyond six presets
+- Recommendations
+- Recording / rewind / scheduled capture
+- Accounts / sync
+- Speech recognition / synthesis
+- Rich track/programme metadata
+- Backend infrastructure
+
+Those wait until Station Discovery v0.2 passes hands-on acceptance.
