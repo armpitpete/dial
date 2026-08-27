@@ -88,6 +88,11 @@ test("discovery UI exposes keyboard-accessible native controls", () => {
   }
 });
 
+test("station search remains clearable after submission", () => {
+  const html = fs.readFileSync(require.resolve("../index.html"), "utf8");
+  assert.ok(html.includes("onsubmit=\"document.getElementById('clear-search-button').disabled=false\""));
+});
+
 test("station and discovery modules load before app", () => {
   const html = fs.readFileSync(require.resolve("../index.html"), "utf8");
   assert.ok(html.indexOf('src="stations.js"') < html.indexOf('src="discovery.js"'));
