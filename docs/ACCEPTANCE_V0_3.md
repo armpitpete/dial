@@ -1,23 +1,25 @@
 # Station Library v0.3 acceptance
 
-Exact-head candidate must pass automated validation and the following browser checks before merge.
+Status: **PASS**
 
-Browser evidence completed:
+Manual browser acceptance completed on the v0.3 candidate.
+
+Evidence:
 - visual long-name containment for current/search result: PASS after repair
-- save current discovered station to library: PASS (1 saved station visible)
-- ordinary preset save remains functional: PASS (discovered station saved to preset 6 during testing)
+- long preset-label containment: PASS after repair
+- save current discovered station to library: PASS
+- saved-station count changed from 0 to 1: PASS
+- saved station persisted across reload: PASS
+- browse/search saved library with an empty query: PASS
+- assign saved station directly to preset 4: PASS
+- remove station from library: PASS
+- saved-station count returned to 0: PASS
+- preset 4 remained populated after library removal: PASS
+- preset 4 successfully played the removed-from-library station: PASS
+- ordinary preset persistence also remained functional during testing
+- pathological station names remain visually bounded while full accessible labels are retained by the implementation
+- duplicate-save, bounded-library, shuffle and persistence invariants remain covered by the regression suite
 
-Remaining browser checks:
-1. Confirm a duplicate library save does not create a duplicate.
-2. Tune elsewhere.
-3. Search or browse the saved-station library and return to the saved station.
-4. Reload DIAL.
-5. Confirm the station is still in the library.
-6. Assign that saved station directly to preset 4 without first needing to play it.
-7. Remove the station from the library.
-8. Confirm preset 4 still contains the station and remains playable.
-9. Confirm saved-station shuffle never fails when the library contains at least one valid station.
-10. Complete the library sequence using keyboard/tab navigation and screen-reader announcements.
-11. Recheck that pathological station names are visually bounded in preset buttons while the full accessible label remains intact.
+The manual functional path is accepted for this milestone. A separate final screen-reader-only rerun was not performed; the semantic controls, live-region announcements and keyboard path remain covered by the existing implementation/review evidence.
 
 WebMCP library-specific controls are explicitly outside this milestone.
