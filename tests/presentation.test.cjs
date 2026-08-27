@@ -19,12 +19,17 @@ test("long-name threshold is intentionally bounded", () => {
   assert.equal(LONG_NAME_THRESHOLD, 80);
 });
 
-test("presentation loads after app state and has bounded-name CSS", () => {
+test("presentation loads after app state and bounds long names including presets", () => {
   const html = fs.readFileSync(require.resolve("../index.html"), "utf8");
   const styles = fs.readFileSync(require.resolve("../styles.css"), "utf8");
+  const script = fs.readFileSync(require.resolve("../presentation.js"), "utf8");
   assert.ok(html.indexOf('src="presentation.js"') > html.indexOf('src="app.js"'));
   assert.match(styles, /\.station-name\.long-station-name/);
   assert.match(styles, /-webkit-line-clamp:\s*4/);
   assert.match(styles, /\.result-name\.long-station-name/);
   assert.match(styles, /-webkit-line-clamp:\s*2/);
+  assert.match(styles, /#preset-buttons button\.long-preset-name/);
+  assert.match(styles, /-webkit-line-clamp:\s*3/);
+  assert.match(script, /getElementById\("preset-buttons"\)/);
+  assert.match(script, /long-preset-name/);
 });
