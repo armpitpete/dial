@@ -53,7 +53,7 @@ test('invalid recent choices are discarded', () => {
   ]), [{ kind: 'tag', query: 'Jazz' }]);
 });
 
-test('page contains optional start choices and browse routes', () => {
+test('page contains optional start choices and progressive browse routes', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   assert.match(html, /id="start-panel"/);
   assert.match(html, /id="start-country"/);
@@ -63,19 +63,23 @@ test('page contains optional start choices and browse routes', () => {
   assert.match(html, /id="start-surprise"/);
   assert.match(html, /id="start-skip"/);
   assert.match(html, /id="browse-country"/);
-  assert.match(html, /id="country-panel"/);
+  assert.match(html, /id="country-panel"[^>]*hidden/);
   assert.match(html, /id="browse-language"/);
-  assert.match(html, /id="language-panel"/);
+  assert.match(html, /id="language-panel"[^>]*hidden/);
   assert.match(html, /data-search-kind="name"/);
   assert.match(html, /id="browse-genre"/);
+  assert.match(html, /id="genre-choices"[^>]*hidden/);
+  assert.match(html, /id="talk-choices"[^>]*hidden/);
   assert.match(html, /id="browse-continent"/);
+  assert.match(html, /id="continent-choices"[^>]*hidden/);
   assert.match(html, /Suggested countries in selected continent/);
   assert.match(html, /id="recent-choices"/);
   assert.ok(html.indexOf('src="browse.js"') > html.indexOf('src="app.js"'));
 });
 
-test('browse controls retain large touch targets and collapse to one column on narrow screens', () => {
+test('browse controls retain hidden semantics and collapse to one column on narrow screens', () => {
   const styles = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  assert.match(styles, /\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/);
   assert.match(styles, /\.choice-grid,/);
   assert.match(styles, /\.browse-actions/);
   assert.match(styles, /grid-template-columns:\s*repeat\(2/);
