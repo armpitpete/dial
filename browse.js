@@ -105,6 +105,7 @@
     const continentCountryChoices = document.getElementById("continent-country-choices");
     const continentStartButton = document.getElementById("continent-start-button");
     const startCountryButton = document.getElementById("start-country");
+    const choicePanels = [countryPanel, languagePanel, genreChoices, talkChoices, continentChoices, continentPanel].filter(Boolean);
     let selectedContinent = "";
     let recents = loadRecents();
 
@@ -137,11 +138,20 @@
     }
 
     function showStart() {
+      hideChoicePanels();
       startPanel.hidden = false;
       document.getElementById("start-heading")?.focus();
     }
 
+    function hideChoicePanels(except = null) {
+      for (const panel of choicePanels) {
+        if (panel !== except) panel.hidden = true;
+      }
+      if (except !== continentPanel) selectedContinent = "";
+    }
+
     function focusSearch(kind) {
+      hideChoicePanels();
       discoveryKind.value = SEARCH_KINDS.has(kind) ? kind : "name";
       discoveryQuery.focus();
     }
@@ -150,6 +160,7 @@
       const safeKind = SEARCH_KINDS.has(kind) ? kind : "name";
       const term = String(query || "").trim();
       if (term.length < 2) return;
+      hideChoicePanels();
       discoveryKind.value = safeKind;
       discoveryQuery.value = term;
       recents = addRecentChoice(recents, { kind: safeKind, query: term });
@@ -186,6 +197,7 @@
 
     function revealChoicePanel(panel) {
       if (!panel) return;
+      hideChoicePanels(panel);
       panel.hidden = false;
       panel.querySelector("button")?.focus();
     }
@@ -194,6 +206,8 @@
       selectedContinent = continent;
       const codes = CONTINENTS[continent] || [];
       if (!continentPanel || !continentCountryChoices || !continentHeading || !continentStartButton) return;
+      hideChoicePanels(continentPanel);
+      selectedContinent = continent;
       continentHeading.textContent = continent;
       continentPanel.hidden = false;
       continentCountryChoices.replaceChildren();
@@ -223,10 +237,7 @@
     document.getElementById("browse-country")?.addEventListener("click", () => revealChoicePanel(countryPanel));
     document.getElementById("browse-language")?.addEventListener("click", () => revealChoicePanel(languagePanel));
     document.getElementById("browse-genre")?.addEventListener("click", () => revealChoicePanel(genreChoices));
-    document.getElementById("browse-continent")?.addEventListener("click", () => {
-      continentChoices.hidden = false;
-      continentChoices.querySelector("button")?.focus();
-    });
+    document.getElementById("browse-continent")?.addEventListener("click", () => revealChoicePanel(continentChoices));
     document.getElementById("country-other")?.addEventListener("click", () => focusSearch("country"));
     document.getElementById("language-other")?.addEventListener("click", () => focusSearch("language"));
     document.getElementById("show-start-button")?.addEventListener("click", showStart);
@@ -244,8 +255,7 @@
     document.getElementById("start-world")?.addEventListener("click", () => {
       rememberStart("world");
       hideStart();
-      continentChoices.hidden = false;
-      continentChoices.querySelector("button")?.focus();
+      revealChoicePanel(continentChoices);
     });
     document.getElementById("start-surprise")?.addEventListener("click", () => {
       rememberStart("surprise");
@@ -258,6 +268,7 @@
     document.getElementById("start-skip")?.addEventListener("click", () => {
       rememberStart("skip");
       hideStart();
+      hideChoicePanels();
       document.getElementById("now-heading")?.focus();
     });
 
@@ -291,6 +302,7 @@
       const term = String(discoveryQuery.value || "").trim();
       const kind = String(discoveryKind.value || "name");
       if (term.length < 2 || !SEARCH_KINDS.has(kind)) return;
+      hideChoicePanels();
       recents = addRecentChoice(recents, { kind, query: term });
       saveRecents();
       renderRecents();
