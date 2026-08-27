@@ -2,7 +2,34 @@
   const stationsApi = root?.DialStations || (typeof require === "function" ? require("./stations.js") : null);
   const api = factory(stationsApi);
   if (typeof module !== "undefined" && module.exports) module.exports = api;
-  if (root) root.DialLibrary = api;
+  if (root) {
+    root.DialLibrary = api;
+    installCapacityGuard(root, api);
+  }
+
+  function installCapacityGuard(target, libraryApi) {
+    const document = target?.document;
+    if (!document) return;
+    const button = document.getElementById("save-library-button");
+    const status = document.getElementById("status");
+    if (!button || !status) return;
+
+    button.addEventListener("click", (event) => {
+      if (button.disabled) return;
+      let library = [];
+      try {
+        library = libraryApi.normalizeLibrary(JSON.parse(target.localStorage.getItem("dial.library.v1") || "[]"));
+      } catch {}
+      if (library.length < libraryApi.MAX_LIBRARY_SIZE) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      status.textContent = "";
+      target.setTimeout(() => {
+        status.textContent = `Station library is full at ${libraryApi.MAX_LIBRARY_SIZE} saved stations. No stations were removed.`;
+      }, 20);
+    }, true);
+  }
 })(typeof globalThis !== "undefined" ? globalThis : this, function (DialStations) {
   "use strict";
 
