@@ -26,6 +26,8 @@
     Oceania: ["AU", "NZ", "FJ", "PG", "WS", "TO", "VU", "SB", "NC", "PF"]
   });
 
+  const COUNTRY_CHOICES = Object.freeze(["United Kingdom", "United States", "Germany", "France", "Canada", "Netherlands", "Australia", "Ireland", "Spain", "Italy", "Japan", "Brazil"]);
+  const LANGUAGE_CHOICES = Object.freeze(["English", "French", "German", "Spanish", "Italian", "Dutch", "Portuguese", "Japanese"]);
   const MUSIC_CHOICES = Object.freeze(["Rock", "Electronic", "Jazz", "Classical", "Pop", "Ambient", "Soul", "Reggae"]);
   const TALK_CHOICES = Object.freeze(["News", "Talk", "Public radio"]);
 
@@ -91,6 +93,10 @@
 
     const recentChoices = document.getElementById("recent-choices");
     const recentEmpty = document.getElementById("recent-empty");
+    const countryPanel = document.getElementById("country-panel");
+    const countryChoices = document.getElementById("country-choices");
+    const languagePanel = document.getElementById("language-panel");
+    const languageChoices = document.getElementById("language-choices");
     const genreChoices = document.getElementById("genre-choices");
     const talkChoices = document.getElementById("talk-choices");
     const continentChoices = document.getElementById("continent-choices");
@@ -203,6 +209,8 @@
       continentStartButton.focus();
     }
 
+    renderButtons(countryChoices, COUNTRY_CHOICES, (country) => submitSearch("country", country));
+    renderButtons(languageChoices, LANGUAGE_CHOICES, (language) => submitSearch("language", language));
     renderButtons(genreChoices, MUSIC_CHOICES, (genre) => submitSearch("tag", genre));
     renderButtons(talkChoices, TALK_CHOICES, (tag) => submitSearch("tag", tag));
     renderButtons(continentChoices, Object.keys(CONTINENTS), openContinent);
@@ -212,11 +220,15 @@
       button.addEventListener("click", () => focusSearch(button.dataset.searchKind));
     }
 
+    document.getElementById("browse-country")?.addEventListener("click", () => revealChoicePanel(countryPanel));
+    document.getElementById("browse-language")?.addEventListener("click", () => revealChoicePanel(languagePanel));
     document.getElementById("browse-genre")?.addEventListener("click", () => revealChoicePanel(genreChoices));
     document.getElementById("browse-continent")?.addEventListener("click", () => {
       continentChoices.hidden = false;
       continentChoices.querySelector("button")?.focus();
     });
+    document.getElementById("country-other")?.addEventListener("click", () => focusSearch("country"));
+    document.getElementById("language-other")?.addEventListener("click", () => focusSearch("language"));
     document.getElementById("show-start-button")?.addEventListener("click", showStart);
 
     document.getElementById("start-music")?.addEventListener("click", () => {
@@ -292,6 +304,8 @@
     RECENT_STORAGE_KEY,
     RECENT_LIMIT,
     CONTINENTS,
+    COUNTRY_CHOICES,
+    LANGUAGE_CHOICES,
     MUSIC_CHOICES,
     TALK_CHOICES,
     normalizeRecent,
