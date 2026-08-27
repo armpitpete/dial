@@ -86,10 +86,14 @@ test('browse logic keeps one secondary choice panel open at a time and collapses
   assert.match(script, /browse-continent[^\n]*revealChoicePanel\(continentChoices\)/);
 });
 
-test('selected browse choice stays visible at the original control with accessible state', () => {
+test('selected browse choices stay visible and cumulative with accessible state', () => {
   const script = fs.readFileSync(path.join(__dirname, '..', 'browse.js'), 'utf8');
   const styles = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  assert.match(script, /const activeFilters = \{\}/);
   assert.match(script, /function setActiveChoice\(kind, query\)/);
+  assert.match(script, /activeFilters\[kind\] = term/);
+  assert.match(script, /root\.DialBrowseActiveFilters = \{ \.\.\.activeFilters \}/);
+  assert.doesNotMatch(script.match(/function setActiveChoice\(kind, query\) \{[\s\S]*?\n    \}/)?.[0] || '', /clearActiveChoice\(/);
   assert.match(script, /button\.textContent = `\$\{label\}: \$\{term\}`/);
   assert.match(script, /setAttribute\("aria-pressed", "true"\)/);
   assert.match(script, /setAttribute\("aria-label", `Selected \$\{label\}: \$\{term\}`\)/);
