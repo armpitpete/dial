@@ -1,0 +1,74 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const Browse = require(path.join(__dirname, '..', 'browse.js'));
+
+test('browse exposes the six intended continents', () => {
+  assert.deepEqual(Object.keys(Browse.CONTINENTS), [
+    'Europe', 'Africa', 'Asia', 'North America', 'South America', 'Oceania'
+  ]);
+});
+
+test('locale inference uses an explicit region and does not guess one', () => {
+  assert.equal(Browse.inferRegion('en-GB'), 'GB');
+  assert.equal(Browse.inferRegion('en'), '');
+});
+
+test('country names are usable Radio Browser country queries', () => {
+  assert.equal(Browse.countryName('GB', 'en'), 'United Kingdom');
+  assert.equal(Browse.countryName('DE', 'en'), 'Germany');
+});
+
+test('continent start choice is deterministic with supplied random source', () => {
+  assert.equal(Browse.chooseContinentCountry('Europe', () => 0), 'GB');
+  assert.equal(Browse.chooseContinentCountry('Oceania', () => 0.999), 'PF');
+  assert.equal(Browse.chooseContinentCountry('Unknown', () => 0), '');
+});
+
+test('recent choices deduplicate and remain bounded', () => {
+  let recents = [];
+  for (let index = 0; index < 10; index += 1) {
+    recents = Browse.addRecentChoice(recents, { kind: 'country', query: `Country ${index}` });
+  }
+  assert.equal(recents.length, Browse.RECENT_LIMIT);
+  recents = Browse.addRecentChoice(recents, { kind: 'country', query: 'Country 9' });
+  assert.equal(recents.length, Browse.RECENT_LIMIT);
+  assert.deepEqual(recents[0], { kind: 'country', query: 'Country 9' });
+});
+
+test('invalid recent choices are discarded', () => {
+  assert.deepEqual(Browse.normalizeRecent([
+    { kind: 'continent', query: 'Europe' },
+    { kind: 'name', query: 'A' },
+    { kind: 'tag', query: 'Jazz' }
+  ]), [{ kind: 'tag', query: 'Jazz' }]);
+});
+
+test('page contains optional start choices and browse routes', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /id="start-panel"/);
+  assert.match(html, /id="start-country"/);
+  assert.match(html, /id="start-music"/);
+  assert.match(html, /id="start-news"/);
+  assert.match(html, /id="start-world"/);
+  assert.match(html, /id="start-surprise"/);
+  assert.match(html, /id="start-skip"/);
+  assert.match(html, /data-search-kind="country"/);
+  assert.match(html, /data-search-kind="language"/);
+  assert.match(html, /data-search-kind="name"/);
+  assert.match(html, /id="browse-genre"/);
+  assert.match(html, /id="browse-continent"/);
+  assert.match(html, /id="recent-choices"/);
+  assert.ok(html.indexOf('src="browse.js"') > html.indexOf('src="app.js"'));
+});
+
+test('browse controls retain large touch targets and collapse to one column on narrow screens', () => {
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  assert.match(styles, /\.choice-grid,/);
+  assert.match(styles, /\.browse-actions/);
+  assert.match(styles, /grid-template-columns:\s*repeat\(2/);
+  assert.match(styles, /@media \(max-width: 620px\)/);
+  assert.match(styles, /\.choice-grid, \.browse-actions \{ grid-template-columns: 1fr; \}/);
+});
