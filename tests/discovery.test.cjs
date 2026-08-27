@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const { BUILT_IN_STATIONS, normalizeStation, normalizeRadioBrowserStation, builtInByLegacyId, stationSummary } = require("../stations.js");
-const { buildSearchUrl, searchStations } = require("../discovery.js");
+const { normalizeSearchTerm, buildSearchUrl, searchStations } = require("../discovery.js");
 
 test("built-in stations use canonical persistent records", () => {
   assert.equal(BUILT_IN_STATIONS.length, 12);
@@ -62,6 +62,14 @@ test("search URL requests working HTTPS stations and bounds results", () => {
   assert.equal(url.searchParams.get("limit"), "20");
 });
 
+test("genre and language directory terms are normalized to lowercase", () => {
+  assert.equal(normalizeSearchTerm("Electronic", "tag"), "electronic");
+  assert.equal(normalizeSearchTerm("English", "language"), "english");
+  assert.equal(normalizeSearchTerm("United Kingdom", "country"), "United Kingdom");
+  const url = new URL(buildSearchUrl("https://example.test", "Electronic", "tag", 20));
+  assert.equal(url.searchParams.get("tag"), "electronic");
+});
+
 test("discovery falls back to the next API mirror", async () => {
   const calls = [];
   const fetchImpl = async (url) => {
@@ -72,6 +80,21 @@ test("discovery falls back to the next API mirror", async () => {
   const results = await searchStations("station", "name", { fetchImpl, roots: ["https://first.test", "https://second.test"], timeoutMs: 100 });
   assert.equal(calls.length, 2);
   assert.equal(results[0].name, "Station One");
+});
+
+test("discovery also tries the next mirror when a successful response yields no usable HTTPS stations", async () => {
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(url);
+    if (url.startsWith("https://first.test")) {
+      return { ok: true, async json() { return [{ stationuuid: "u0", name: "HTTP Only", url_resolved: "http://stream.test/zero" }]; } };
+    }
+    return { ok: true, async json() { return [{ stationuuid: "u1", name: "Electronic One", url_resolved: "https://stream.test/one", tags: "electronic" }]; } };
+  };
+  const results = await searchStations("Electronic", "tag", { fetchImpl, roots: ["https://first.test", "https://second.test"], timeoutMs: 100 });
+  assert.equal(calls.length, 2);
+  assert.equal(results[0].name, "Electronic One");
+  assert.match(calls[0], /tag=electronic/);
 });
 
 test("duplicate directory rows collapse by UUID", async () => {
