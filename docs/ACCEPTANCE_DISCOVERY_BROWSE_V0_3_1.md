@@ -15,6 +15,8 @@ Exact-head candidate must pass automated validation and the following browser ch
 - Recent choices contains multiple distinct searches and persists across candidate reloads: PASS.
 - Repeating `Genre: Electronic` moves it to the front without duplication: PASS.
 - Continent → Europe → Start somewhere in Europe: PASS; DIAL transparently selected Ukraine, returned a Ukrainian station result, added `Country: Ukraine` to Recent choices, and collapsed the continent panel.
+- Selected browse state remains anchored at the original Find/Explore control and is visibly highlighted for partial-sight users (for example `Country: United Kingdom`): PASS.
+- Selected browse state also exposes programmatic pressed/selected semantics for assistive technology: automated/code-review PASS.
 - Volume control visible while playing and retained at 35% across candidate reload/head change: PASS.
 - 35% is audibly quieter than 100%: PASS.
 - 0% behaves as mute while preserving radio state: PASS.
@@ -38,6 +40,7 @@ Exact-head candidate must pass automated validation and the following browser ch
 4. “Start somewhere” must transparently choose a country within the selected continent; it must not claim to be an exhaustive continent-wide search. **PASS: Europe selected Ukraine.**
 5. Direct text search must remain available and unchanged. **PASS via station-name search.**
 6. Search results must remain one station at a time with Previous / Play / Next controls. **PASS**
+7. The active browse selection must remain visually anchored at the top-level Find/Explore control after results appear, with a strong selected state suitable for partial sight. **PASS.**
 
 ## Recent choices
 
