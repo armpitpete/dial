@@ -88,13 +88,15 @@ test("discovery UI exposes keyboard-accessible native controls", () => {
   }
 });
 
-test("station search remains clearable after submission", () => {
+test("station search clear control begins safely disabled", () => {
   const html = fs.readFileSync(require.resolve("../index.html"), "utf8");
-  assert.ok(html.includes("onsubmit=\"document.getElementById('clear-search-button').disabled=false\""));
+  assert.match(html, /id="clear-search-button"[^>]*disabled/);
+  assert.match(fs.readFileSync(require.resolve("../app.js"), "utf8"), /clearSearchButton\.disabled = false/);
 });
 
-test("station and discovery modules load before app", () => {
+test("station, discovery, and library modules load before app", () => {
   const html = fs.readFileSync(require.resolve("../index.html"), "utf8");
   assert.ok(html.indexOf('src="stations.js"') < html.indexOf('src="discovery.js"'));
-  assert.ok(html.indexOf('src="discovery.js"') < html.indexOf('src="app.js"'));
+  assert.ok(html.indexOf('src="discovery.js"') < html.indexOf('src="library.js"'));
+  assert.ok(html.indexOf('src="library.js"') < html.indexOf('src="app.js"'));
 });

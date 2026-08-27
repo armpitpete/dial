@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DIAL — Blind-first internet radio</title>
-  <meta name="description" content="DIAL is a blind-first internet radio for tuning, discovering, and remembering stations.">
+  <meta name="description" content="DIAL is a blind-first internet radio for tuning, discovering, saving, and remembering stations.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -34,7 +34,7 @@
 
     <section class="discovery" aria-labelledby="discovery-heading">
       <h2 id="discovery-heading">Find stations</h2>
-      <form id="discovery-form" class="discovery-form" onsubmit="document.getElementById('clear-search-button').disabled=false">
+      <form id="discovery-form" class="search-form">
         <label for="discovery-query">Search internet radio</label>
         <input id="discovery-query" name="query" type="search" minlength="2" required autocomplete="off">
         <label for="discovery-kind">Search by</label>
@@ -47,7 +47,7 @@
         <button type="submit">Search stations</button>
       </form>
 
-      <div id="discovery-panel" class="discovery-result" hidden>
+      <div id="discovery-panel" class="result-card" hidden>
         <p id="discovery-position" class="result-position"></p>
         <p id="discovery-name" class="result-name"></p>
         <p id="discovery-description" class="station-description"></p>
@@ -55,7 +55,49 @@
           <button id="previous-result-button" type="button">Previous result</button>
           <button id="play-result-button" type="button">Play result</button>
           <button id="next-result-button" type="button">Next result</button>
-          <button id="clear-search-button" type="button">Clear search</button>
+          <button id="clear-search-button" type="button" disabled>Clear search</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="library" aria-labelledby="library-heading">
+      <h2 id="library-heading">Saved stations</h2>
+      <p id="library-count" class="source">0 saved stations.</p>
+
+      <div class="controls">
+        <button id="save-library-button" type="button">Save current station</button>
+        <button id="shuffle-library-button" type="button" disabled>Shuffle saved stations</button>
+      </div>
+
+      <form id="library-form" class="library-form">
+        <label for="library-query">Search saved stations</label>
+        <input id="library-query" name="query" type="search" autocomplete="off" placeholder="Leave blank to browse all">
+        <button type="submit">Search library</button>
+      </form>
+
+      <div id="library-panel" class="result-card" hidden>
+        <p id="library-position" class="result-position"></p>
+        <p id="library-name" class="result-name"></p>
+        <p id="library-description" class="station-description"></p>
+
+        <div class="controls" aria-label="Saved station controls">
+          <button id="previous-library-button" type="button">Previous saved</button>
+          <button id="play-library-button" type="button">Play saved</button>
+          <button id="next-library-button" type="button">Next saved</button>
+          <button id="remove-library-button" type="button">Remove saved</button>
+          <button id="clear-library-button" type="button">Clear library search</button>
+        </div>
+
+        <div class="save-form">
+          <span id="library-preset-label">Assign this saved station to preset</span>
+          <div id="library-preset-buttons" class="preset-grid" role="group" aria-labelledby="library-preset-label">
+            <button type="button" data-library-preset="1">Assign to 1</button>
+            <button type="button" data-library-preset="2">Assign to 2</button>
+            <button type="button" data-library-preset="3">Assign to 3</button>
+            <button type="button" data-library-preset="4">Assign to 4</button>
+            <button type="button" data-library-preset="5">Assign to 5</button>
+            <button type="button" data-library-preset="6">Assign to 6</button>
+          </div>
         </div>
       </div>
     </section>
@@ -97,20 +139,23 @@
         <div><dt>A</dt><dd>Shuffle built-in stations</dd></div>
         <div><dt>B</dt><dd>Back to previous station</dd></div>
         <div><dt>I</dt><dd>Announce current station</dd></div>
-        <div><dt>F</dt><dd>Focus station search</dd></div>
+        <div><dt>F</dt><dd>Focus internet station search</dd></div>
+        <div><dt>L</dt><dd>Focus saved-station search</dd></div>
       </dl>
     </details>
 
     <p id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
     <footer>
-      <p>Built-in stations use public SomaFM streams. Discovery uses Radio Browser. Presets stay on this device.</p>
+      <p>Built-in stations use public SomaFM streams. Discovery uses Radio Browser. Presets and saved stations stay on this device.</p>
     </footer>
   </main>
 
   <audio id="audio" preload="none"></audio>
   <script src="stations.js"></script>
   <script src="discovery.js"></script>
+  <script src="library.js"></script>
   <script src="app.js"></script>
+  <script src="presentation.js"></script>
 </body>
 </html>

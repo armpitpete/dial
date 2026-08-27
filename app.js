@@ -3,9 +3,11 @@
 
   const { BUILT_IN_STATIONS, normalizeStation, builtInByLegacyId, stationSummary } = window.DialStations;
   const { SEARCH_KINDS, searchStations } = window.DialDiscovery;
+  const { normalizeLibrary, hasStation, addStation, removeStation, searchLibrary, chooseStation } = window.DialLibrary;
 
-  const STORAGE_KEY = "dial.presets.v2";
-  const LEGACY_STORAGE_KEY = "dial.presets.v1";
+  const PRESET_STORAGE_KEY = "dial.presets.v2";
+  const LEGACY_PRESET_STORAGE_KEY = "dial.presets.v1";
+  const LIBRARY_STORAGE_KEY = "dial.library.v1";
   const DEFAULT_PRESETS = [BUILT_IN_STATIONS[0], BUILT_IN_STATIONS[1], BUILT_IN_STATIONS[2], null, null, null];
 
   const audio = document.getElementById("audio");
@@ -23,6 +25,7 @@
   const presetButtons = document.getElementById("preset-buttons");
   const savePresetForm = document.getElementById("save-preset-form");
   const presetNumber = document.getElementById("preset-number");
+
   const discoveryForm = document.getElementById("discovery-form");
   const discoveryQuery = document.getElementById("discovery-query");
   const discoveryKind = document.getElementById("discovery-kind");
@@ -35,37 +38,84 @@
   const playResultButton = document.getElementById("play-result-button");
   const clearSearchButton = document.getElementById("clear-search-button");
 
+  const saveLibraryButton = document.getElementById("save-library-button");
+  const shuffleLibraryButton = document.getElementById("shuffle-library-button");
+  const libraryCount = document.getElementById("library-count");
+  const libraryForm = document.getElementById("library-form");
+  const libraryQuery = document.getElementById("library-query");
+  const libraryPanel = document.getElementById("library-panel");
+  const libraryPosition = document.getElementById("library-position");
+  const libraryName = document.getElementById("library-name");
+  const libraryDescription = document.getElementById("library-description");
+  const previousLibraryButton = document.getElementById("previous-library-button");
+  const playLibraryButton = document.getElementById("play-library-button");
+  const nextLibraryButton = document.getElementById("next-library-button");
+  const removeLibraryButton = document.getElementById("remove-library-button");
+  const clearLibraryButton = document.getElementById("clear-library-button");
+  const libraryPresetButtons = document.getElementById("library-preset-buttons");
+
   let currentStation = BUILT_IN_STATIONS[0];
   let previousStation = null;
   let shouldBePlaying = false;
   let presets = loadPresets();
+
   let discoveryResults = [];
   let discoveryIndex = -1;
   let lastSearch = null;
 
+  let library = loadLibrary();
+  let libraryResults = [];
+  let libraryIndex = -1;
+  let lastLibraryQuery = null;
+
+  function cloneStation(station) {
+    return station ? { ...station, tags: [...station.tags] } : null;
+  }
+
   function loadPresets() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(PRESET_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length === 6) return parsed.map((value) => normalizeStation(value));
       }
-      const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      const legacyRaw = localStorage.getItem(LEGACY_PRESET_STORAGE_KEY);
       if (legacyRaw) {
         const legacy = JSON.parse(legacyRaw);
         if (Array.isArray(legacy) && legacy.length === 6) {
           const migrated = legacy.map((id) => typeof id === "string" ? builtInByLegacyId(id) : null);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(migrated));
           return migrated;
         }
       }
     } catch {}
-    return DEFAULT_PRESETS.map((station) => station ? { ...station } : null);
+    return DEFAULT_PRESETS.map(cloneStation);
   }
 
   function savePresets() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(presets)); }
-    catch { announce("Preset changed for this session. Browser storage is unavailable."); }
+    try {
+      localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+    } catch {
+      announce("Preset changed for this session. Browser storage is unavailable.");
+    }
+  }
+
+  function loadLibrary() {
+    try {
+      const raw = localStorage.getItem(LIBRARY_STORAGE_KEY);
+      if (!raw) return [];
+      return normalizeLibrary(JSON.parse(raw));
+    } catch {
+      return [];
+    }
+  }
+
+  function saveLibrary() {
+    try {
+      localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+    } catch {
+      announce("Saved stations changed for this session. Browser storage is unavailable.");
+    }
   }
 
   function announce(message) {
@@ -95,6 +145,10 @@
     playButton.textContent = shouldBePlaying ? "Stop" : "Play";
     backButton.disabled = !previousStation;
     shufflePresetsButton.disabled = !presets.some(Boolean);
+    saveLibraryButton.disabled = hasStation(library, currentStation.uuid);
+    saveLibraryButton.textContent = saveLibraryButton.disabled ? "Saved in library" : "Save current station";
+    shuffleLibraryButton.disabled = library.length === 0;
+    libraryCount.textContent = library.length === 1 ? "1 saved station." : `${library.length} saved stations.`;
     renderPresets();
   }
 
@@ -119,11 +173,21 @@
     currentStation = next;
     audio.src = next.streamUrl;
     updateUI();
+
     if (autoplay) {
       shouldBePlaying = true;
-      try { await audio.play(); updateUI(); describeCurrentStation(reason); }
-      catch { shouldBePlaying = false; updateUI(); announce(`${next.name}. Playback was blocked or the stream is unavailable. Press Play to try again.`); }
-    } else describeCurrentStation(reason);
+      try {
+        await audio.play();
+        updateUI();
+        describeCurrentStation(reason);
+      } catch {
+        shouldBePlaying = false;
+        updateUI();
+        announce(`${next.name}. Playback was blocked or the stream is unavailable. Press Play to try again.`);
+      }
+    } else {
+      describeCurrentStation(reason);
+    }
     return next;
   }
 
@@ -131,12 +195,31 @@
     if (!audio.src) audio.src = currentStation.streamUrl;
     shouldBePlaying = true;
     updateUI();
-    try { await audio.play(); updateUI(); return describeCurrentStation("Playing "); }
-    catch { shouldBePlaying = false; updateUI(); const message = `${currentStation.name}. Playback was blocked or the stream is unavailable.`; announce(message); return message; }
+    try {
+      await audio.play();
+      updateUI();
+      return describeCurrentStation("Playing ");
+    } catch {
+      shouldBePlaying = false;
+      updateUI();
+      const message = `${currentStation.name}. Playback was blocked or the stream is unavailable.`;
+      announce(message);
+      return message;
+    }
   }
 
-  function stop() { shouldBePlaying = false; audio.pause(); updateUI(); const message = `Stopped ${currentStation.name}.`; announce(message); return message; }
-  async function togglePlayback() { return shouldBePlaying ? stop() : play(); }
+  function stop() {
+    shouldBePlaying = false;
+    audio.pause();
+    updateUI();
+    const message = `Stopped ${currentStation.name}.`;
+    announce(message);
+    return message;
+  }
+
+  async function togglePlayback() {
+    return shouldBePlaying ? stop() : play();
+  }
 
   async function tune(direction) {
     let index = BUILT_IN_STATIONS.findIndex((station) => station.uuid === currentStation.uuid);
@@ -147,7 +230,11 @@
   }
 
   async function goBack() {
-    if (!previousStation) { const message = "No previous station yet."; announce(message); return message; }
+    if (!previousStation) {
+      const message = "No previous station yet.";
+      announce(message);
+      return message;
+    }
     return setStation(previousStation, { reason: "Back to " });
   }
 
@@ -159,7 +246,11 @@
 
   async function shufflePresets() {
     const available = presets.map((station, index) => ({ station, preset: index + 1 })).filter((item) => item.station);
-    if (!available.length) { const message = "No presets have been saved."; announce(message); return message; }
+    if (!available.length) {
+      const message = "No presets have been saved.";
+      announce(message);
+      return message;
+    }
     const alternatives = available.filter((item) => item.station.uuid !== currentStation.uuid);
     const pool = alternatives.length ? alternatives : available;
     const choice = pool[Math.floor(Math.random() * pool.length)];
@@ -171,20 +262,35 @@
     const index = Number(number) - 1;
     if (!Number.isInteger(index) || index < 0 || index >= presets.length) throw new Error("Preset must be between 1 and 6.");
     const station = presets[index];
-    if (!station) { const message = `Preset ${number} is empty.`; announce(message); return message; }
+    if (!station) {
+      const message = `Preset ${number} is empty.`;
+      announce(message);
+      return message;
+    }
     await setStation(station, { autoplay: true, reason: `Preset ${number}. ` });
     return `Playing preset ${number}, ${station.name}.`;
   }
 
-  function savePreset(number) {
+  function saveStationToPreset(station, number, label = "Saved") {
     const index = Number(number) - 1;
     if (!Number.isInteger(index) || index < 0 || index >= presets.length) throw new Error("Preset must be between 1 and 6.");
-    presets[index] = { ...currentStation, tags: [...currentStation.tags] };
-    savePresets(); updateUI();
-    const message = `Saved ${currentStation.name} to preset ${number}.`; announce(message); return message;
+    const normalized = normalizeStation(station);
+    if (!normalized) throw new Error("Invalid station.");
+    presets[index] = cloneStation(normalized);
+    savePresets();
+    updateUI();
+    const message = `${label} ${normalized.name} to preset ${number}.`;
+    announce(message);
+    return message;
   }
 
-  function currentDiscoveryResult() { return discoveryIndex >= 0 ? discoveryResults[discoveryIndex] : null; }
+  function savePreset(number) {
+    return saveStationToPreset(currentStation, number);
+  }
+
+  function currentDiscoveryResult() {
+    return discoveryIndex >= 0 ? discoveryResults[discoveryIndex] : null;
+  }
 
   function renderDiscoveryResult({ announceResult = true } = {}) {
     const station = currentDiscoveryResult();
@@ -209,16 +315,29 @@
     discoveryName.textContent = "Searching…";
     discoveryDescription.textContent = `Searching by ${safeKind}.`;
     discoveryPosition.textContent = "";
+    clearSearchButton.disabled = false;
     announce(`Searching stations by ${safeKind} for ${term}.`);
+
     try {
       discoveryResults = await searchStations(term, safeKind);
       discoveryIndex = discoveryResults.length ? 0 : -1;
       if (!discoveryResults.length) {
-        discoveryName.textContent = "No stations found"; discoveryDescription.textContent = "Try a broader search."; discoveryPosition.textContent = ""; announce(`No stations found for ${term}.`); return [];
+        discoveryName.textContent = "No stations found";
+        discoveryDescription.textContent = "Try a broader search.";
+        discoveryPosition.textContent = "";
+        announce(`No stations found for ${term}.`);
+        return [];
       }
-      renderDiscoveryResult(); return discoveryResults;
+      renderDiscoveryResult();
+      return discoveryResults;
     } catch (error) {
-      discoveryResults = []; discoveryIndex = -1; discoveryName.textContent = "Search unavailable"; discoveryDescription.textContent = error?.message || "Station directory unavailable."; discoveryPosition.textContent = ""; announce(discoveryDescription.textContent); return [];
+      discoveryResults = [];
+      discoveryIndex = -1;
+      discoveryName.textContent = "Search unavailable";
+      discoveryDescription.textContent = error?.message || "Station directory unavailable.";
+      discoveryPosition.textContent = "";
+      announce(discoveryDescription.textContent);
+      return [];
     }
   }
 
@@ -226,17 +345,143 @@
     if (!discoveryResults.length) return null;
     const delta = direction === "previous" ? -1 : 1;
     discoveryIndex = (discoveryIndex + delta + discoveryResults.length) % discoveryResults.length;
-    renderDiscoveryResult(); return currentDiscoveryResult();
+    renderDiscoveryResult();
+    return currentDiscoveryResult();
   }
 
   async function playDiscoveryResult(number = discoveryIndex + 1) {
     const index = Number(number) - 1;
     if (!Number.isInteger(index) || index < 0 || index >= discoveryResults.length) throw new Error("Search result is out of range.");
-    discoveryIndex = index; renderDiscoveryResult({ announceResult: false });
+    discoveryIndex = index;
+    renderDiscoveryResult({ announceResult: false });
     return setStation(discoveryResults[index], { autoplay: true, reason: `Search result ${index + 1}. ` });
   }
 
-  function clearSearch() { discoveryResults = []; discoveryIndex = -1; lastSearch = null; discoveryQuery.value = ""; discoveryPanel.hidden = true; announce("Station search cleared."); }
+  function clearSearch() {
+    discoveryResults = [];
+    discoveryIndex = -1;
+    lastSearch = null;
+    discoveryQuery.value = "";
+    discoveryPanel.hidden = true;
+    clearSearchButton.disabled = true;
+    announce("Station search cleared.");
+  }
+
+  function currentLibraryResult() {
+    return libraryIndex >= 0 ? libraryResults[libraryIndex] : null;
+  }
+
+  function renderLibraryResult({ announceResult = true } = {}) {
+    const station = currentLibraryResult();
+    const hasResults = Boolean(station);
+    const hasSearch = lastLibraryQuery !== null;
+
+    libraryPanel.hidden = !hasResults && !hasSearch;
+    previousLibraryButton.disabled = !hasResults || libraryResults.length < 2;
+    nextLibraryButton.disabled = !hasResults || libraryResults.length < 2;
+    playLibraryButton.disabled = !hasResults;
+    removeLibraryButton.disabled = !hasResults;
+    clearLibraryButton.disabled = !hasSearch;
+    for (const button of libraryPresetButtons.querySelectorAll("button")) {
+      button.disabled = !hasResults;
+    }
+
+    if (!station) {
+      if (hasSearch) {
+        libraryPosition.textContent = "";
+        libraryName.textContent = "No saved stations found";
+        libraryDescription.textContent = library.length ? "Try a broader library search." : "Save a station to build your library.";
+      }
+      return;
+    }
+
+    libraryPosition.textContent = `Saved station ${libraryIndex + 1} of ${libraryResults.length}`;
+    libraryName.textContent = station.name;
+    libraryDescription.textContent = stationSummary(station);
+    if (announceResult) {
+      announce(`${stationSummary(station)} Saved station ${libraryIndex + 1} of ${libraryResults.length}.`);
+    }
+  }
+
+  function performLibrarySearch(query = "") {
+    lastLibraryQuery = String(query || "").trim();
+    libraryResults = searchLibrary(library, lastLibraryQuery);
+    libraryIndex = libraryResults.length ? 0 : -1;
+    renderLibraryResult();
+    return libraryResults;
+  }
+
+  function moveLibraryResult(direction) {
+    if (!libraryResults.length) return null;
+    const delta = direction === "previous" ? -1 : 1;
+    libraryIndex = (libraryIndex + delta + libraryResults.length) % libraryResults.length;
+    renderLibraryResult();
+    return currentLibraryResult();
+  }
+
+  async function playLibraryResult() {
+    const station = currentLibraryResult();
+    if (!station) throw new Error("No saved station is selected.");
+    return setStation(station, { autoplay: true, reason: "Saved station. " });
+  }
+
+  function saveCurrentToLibrary() {
+    const result = addStation(library, currentStation);
+    library = result.library;
+    saveLibrary();
+    updateUI();
+    libraryQuery.value = "";
+    lastLibraryQuery = "";
+    libraryResults = searchLibrary(library, "");
+    libraryIndex = libraryResults.findIndex((station) => station.uuid === currentStation.uuid);
+    renderLibraryResult({ announceResult: false });
+    const message = result.added ? `Saved ${currentStation.name} to your station library.` : `${currentStation.name} is already in your station library.`;
+    announce(message);
+    return message;
+  }
+
+  function removeCurrentLibraryResult() {
+    const station = currentLibraryResult();
+    if (!station) return "No saved station is selected.";
+    const name = station.name;
+    library = removeStation(library, station.uuid);
+    saveLibrary();
+    updateUI();
+    libraryResults = searchLibrary(library, lastLibraryQuery || "");
+    if (libraryResults.length) libraryIndex = Math.min(libraryIndex, libraryResults.length - 1);
+    else libraryIndex = -1;
+    renderLibraryResult({ announceResult: false });
+    const message = `Removed ${name} from your station library. Presets were not changed.`;
+    announce(message);
+    return message;
+  }
+
+  async function shuffleLibrary() {
+    const station = chooseStation(library, currentStation.uuid);
+    if (!station) {
+      const message = "No saved stations are available to shuffle.";
+      announce(message);
+      return message;
+    }
+    await setStation(station, { autoplay: true, reason: "Shuffled saved station. " });
+    return `Playing saved station ${station.name}.`;
+  }
+
+  function assignLibraryResultToPreset(number) {
+    const station = currentLibraryResult();
+    if (!station) throw new Error("No saved station is selected.");
+    return saveStationToPreset(station, number, "Assigned");
+  }
+
+  function clearLibrarySearch() {
+    lastLibraryQuery = null;
+    libraryResults = [];
+    libraryIndex = -1;
+    libraryQuery.value = "";
+    libraryPanel.hidden = true;
+    clearLibraryButton.disabled = true;
+    announce("Saved-station search cleared.");
+  }
 
   function radioState() {
     return {
@@ -244,11 +489,18 @@
       playback: shouldBePlaying && !audio.paused ? "playing" : (shouldBePlaying ? "connecting" : "stopped"),
       previousStation: previousStation?.name || null,
       presets: presets.map((station, index) => ({ number: index + 1, station })),
-      discovery: { query: lastSearch?.query || null, kind: lastSearch?.kind || null, count: discoveryResults.length, currentResult: discoveryIndex >= 0 ? discoveryIndex + 1 : null }
+      discovery: {
+        query: lastSearch?.query || null,
+        kind: lastSearch?.kind || null,
+        count: discoveryResults.length,
+        currentResult: discoveryIndex >= 0 ? discoveryIndex + 1 : null
+      }
     };
   }
 
-  function toolText(text) { return { content: [{ type: "text", text }] }; }
+  function toolText(text) {
+    return { content: [{ type: "text", text }] };
+  }
 
   async function registerWebMCPTools() {
     const modelContext = document.modelContext || navigator.modelContext;
@@ -267,8 +519,11 @@
       { name: "play_search_result", description: "Play one result from DIAL's current station search.", inputSchema: { type: "object", properties: { result: { type: "integer", minimum: 1, maximum: 20 } }, required: ["result"] }, execute: async ({ result }) => toolText(`Playing ${(await playDiscoveryResult(result)).name}.`) }
     ];
     for (const tool of tools) {
-      try { await modelContext.registerTool(tool); }
-      catch (error) { console.warn(`DIAL WebMCP tool registration failed: ${tool.name}`, error); }
+      try {
+        await modelContext.registerTool(tool);
+      } catch (error) {
+        console.warn(`DIAL WebMCP tool registration failed: ${tool.name}`, error);
+      }
     }
   }
 
@@ -278,37 +533,101 @@
   backButton.addEventListener("click", goBack);
   shufflePresetsButton.addEventListener("click", shufflePresets);
   shuffleAllButton.addEventListener("click", shuffleAll);
+
   previousResultButton.addEventListener("click", () => moveDiscoveryResult("previous"));
   nextResultButton.addEventListener("click", () => moveDiscoveryResult("next"));
   playResultButton.addEventListener("click", () => playDiscoveryResult());
   clearSearchButton.addEventListener("click", clearSearch);
-  discoveryForm.addEventListener("submit", (event) => { event.preventDefault(); performSearch(discoveryQuery.value, discoveryKind.value); });
-  savePresetForm.addEventListener("submit", (event) => { event.preventDefault(); savePreset(presetNumber.value); });
+  discoveryForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    performSearch(discoveryQuery.value, discoveryKind.value);
+  });
+
+  savePresetForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    savePreset(presetNumber.value);
+  });
+
+  saveLibraryButton.addEventListener("click", saveCurrentToLibrary);
+  shuffleLibraryButton.addEventListener("click", shuffleLibrary);
+  previousLibraryButton.addEventListener("click", () => moveLibraryResult("previous"));
+  nextLibraryButton.addEventListener("click", () => moveLibraryResult("next"));
+  playLibraryButton.addEventListener("click", playLibraryResult);
+  removeLibraryButton.addEventListener("click", removeCurrentLibraryResult);
+  clearLibraryButton.addEventListener("click", clearLibrarySearch);
+  libraryForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    performLibrarySearch(libraryQuery.value);
+  });
+  libraryPresetButtons.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-library-preset]");
+    if (!button) return;
+    assignLibraryResultToPreset(button.dataset.libraryPreset);
+  });
 
   audio.addEventListener("playing", updateUI);
   audio.addEventListener("pause", updateUI);
   audio.addEventListener("waiting", updateUI);
-  audio.addEventListener("error", () => { shouldBePlaying = false; updateUI(); announce(`${currentStation.name} is unavailable right now. The station has not been removed from your presets.`); });
+  audio.addEventListener("error", () => {
+    shouldBePlaying = false;
+    updateUI();
+    announce(`${currentStation.name} is unavailable right now. Saved stations and presets were not changed.`);
+  });
 
   document.addEventListener("keydown", (event) => {
     const target = event.target;
     const isEditable = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target?.isContentEditable;
     const isInteractive = target instanceof Element && Boolean(target.closest("button, a, summary"));
     if (isEditable || isInteractive) return;
-    if (event.code === "Space") { event.preventDefault(); togglePlayback(); return; }
-    if (event.key === "ArrowLeft") { event.preventDefault(); tune("previous"); return; }
-    if (event.key === "ArrowRight") { event.preventDefault(); tune("next"); return; }
-    if (/^Digit[1-6]$/.test(event.code)) { event.preventDefault(); const preset = event.code.slice(-1); if (event.shiftKey) savePreset(preset); else playPreset(preset); return; }
+
+    if (event.code === "Space") {
+      event.preventDefault();
+      togglePlayback();
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      tune("previous");
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      tune("next");
+      return;
+    }
+    if (/^Digit[1-6]$/.test(event.code)) {
+      event.preventDefault();
+      const preset = event.code.slice(-1);
+      if (event.shiftKey) savePreset(preset);
+      else playPreset(preset);
+      return;
+    }
+
     const key = event.key.toLowerCase();
-    if (key === "s") { event.preventDefault(); shufflePresets(); }
-    else if (key === "a") { event.preventDefault(); shuffleAll(); }
-    else if (key === "b") { event.preventDefault(); goBack(); }
-    else if (key === "i") { event.preventDefault(); describeCurrentStation(); }
-    else if (key === "f") { event.preventDefault(); discoveryQuery.focus(); }
+    if (key === "s") {
+      event.preventDefault();
+      shufflePresets();
+    } else if (key === "a") {
+      event.preventDefault();
+      shuffleAll();
+    } else if (key === "b") {
+      event.preventDefault();
+      goBack();
+    } else if (key === "i") {
+      event.preventDefault();
+      describeCurrentStation();
+    } else if (key === "f") {
+      event.preventDefault();
+      discoveryQuery.focus();
+    } else if (key === "l") {
+      event.preventDefault();
+      libraryQuery.focus();
+    }
   });
 
   audio.src = currentStation.streamUrl;
   updateUI();
   renderDiscoveryResult({ announceResult: false });
+  renderLibraryResult({ announceResult: false });
   registerWebMCPTools();
 })();
