@@ -118,12 +118,14 @@
       language: "Language",
       name: "Station name"
     };
+    const activeFilters = {};
     let selectedContinent = "";
     let recents = loadRecents();
 
     for (const button of Object.values(primaryChoiceButtons)) {
       if (button) button.setAttribute("aria-pressed", "false");
     }
+    syncActiveFilters();
 
     function readStorage(key) {
       try { return root.localStorage.getItem(key); } catch { return null; }
@@ -166,28 +168,46 @@
       if (except !== continentPanel) selectedContinent = "";
     }
 
-    function clearActiveChoice() {
+    function syncActiveFilters() {
+      root.DialBrowseActiveFilters = { ...activeFilters };
+    }
+
+    function renderActiveChoices() {
       for (const [kind, button] of Object.entries(primaryChoiceButtons)) {
         if (!button) continue;
-        button.textContent = primaryChoiceLabels[kind];
-        button.setAttribute("aria-pressed", "false");
-        button.classList.remove("selected-choice");
-        button.removeAttribute("aria-label");
-        button.removeAttribute("title");
+        const label = primaryChoiceLabels[kind];
+        const term = activeFilters[kind];
+        if (term) {
+          button.textContent = `${label}: ${term}`;
+          button.setAttribute("aria-pressed", "true");
+          button.setAttribute("aria-label", `Selected ${label}: ${term}`);
+          button.title = `Selected ${label}: ${term}`;
+          button.classList.add("selected-choice");
+        } else {
+          button.textContent = label;
+          button.setAttribute("aria-pressed", "false");
+          button.classList.remove("selected-choice");
+          button.removeAttribute("aria-label");
+          button.removeAttribute("title");
+        }
       }
     }
 
+    function clearActiveChoice(kind = null) {
+      if (kind && SEARCH_KINDS.has(kind)) delete activeFilters[kind];
+      else {
+        for (const key of Object.keys(activeFilters)) delete activeFilters[key];
+      }
+      syncActiveFilters();
+      renderActiveChoices();
+    }
+
     function setActiveChoice(kind, query) {
-      const button = primaryChoiceButtons[kind];
-      const label = primaryChoiceLabels[kind];
       const term = String(query || "").trim();
-      if (!button || !label || !term) return;
-      clearActiveChoice();
-      button.textContent = `${label}: ${term}`;
-      button.setAttribute("aria-pressed", "true");
-      button.setAttribute("aria-label", `Selected ${label}: ${term}`);
-      button.title = `Selected ${label}: ${term}`;
-      button.classList.add("selected-choice");
+      if (!SEARCH_KINDS.has(kind) || !term) return;
+      activeFilters[kind] = term;
+      syncActiveFilters();
+      renderActiveChoices();
     }
 
     function focusSearch(kind) {
@@ -270,6 +290,7 @@
     renderButtons(talkChoices, TALK_CHOICES, (tag) => submitSearch("tag", tag));
     renderButtons(continentChoices, Object.keys(CONTINENTS), openContinent);
     renderRecents();
+    renderActiveChoices();
 
     for (const button of document.querySelectorAll("[data-search-kind]")) {
       button.addEventListener("click", () => focusSearch(button.dataset.searchKind));
@@ -282,7 +303,7 @@
     document.getElementById("country-other")?.addEventListener("click", () => focusSearch("country"));
     document.getElementById("language-other")?.addEventListener("click", () => focusSearch("language"));
     document.getElementById("show-start-button")?.addEventListener("click", showStart);
-    document.getElementById("clear-search-button")?.addEventListener("click", clearActiveChoice);
+    document.getElementById("clear-search-button")?.addEventListener("click", () => clearActiveChoice());
 
     document.getElementById("start-music")?.addEventListener("click", () => {
       rememberStart("music");
