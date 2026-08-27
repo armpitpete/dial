@@ -29,14 +29,17 @@
   function addStation(values, value) {
     const station = DialStations.normalizeStation(value);
     const library = normalizeLibrary(values);
-    if (!station) return { library, added: false };
+    if (!station) return { library, added: false, full: false };
     const existingIndex = library.findIndex((item) => item.uuid === station.uuid);
     if (existingIndex >= 0) {
       const next = [...library];
       next[existingIndex] = station;
-      return { library: next, added: false };
+      return { library: next, added: false, full: false };
     }
-    return { library: [station, ...library].slice(0, MAX_LIBRARY_SIZE), added: true };
+    if (library.length >= MAX_LIBRARY_SIZE) {
+      return { library, added: false, full: true };
+    }
+    return { library: [station, ...library], added: true, full: false };
   }
 
   function removeStation(values, uuid) {
