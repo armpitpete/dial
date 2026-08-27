@@ -34,7 +34,7 @@
 
     <section class="discovery" aria-labelledby="discovery-heading">
       <h2 id="discovery-heading">Find stations</h2>
-      <form id="discovery-form" class="discovery-form">
+      <form id="discovery-form" class="discovery-form" onsubmit="document.getElementById('clear-search-button').disabled=false">
         <label for="discovery-query">Search internet radio</label>
         <input id="discovery-query" name="query" type="search" minlength="2" required autocomplete="off">
         <label for="discovery-kind">Search by</label>
