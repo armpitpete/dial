@@ -77,6 +77,15 @@ test('page contains optional start choices and progressive browse routes', () =>
   assert.ok(html.indexOf('src="browse.js"') > html.indexOf('src="app.js"'));
 });
 
+test('browse logic keeps one secondary choice panel open at a time and collapses after search', () => {
+  const script = fs.readFileSync(path.join(__dirname, '..', 'browse.js'), 'utf8');
+  assert.match(script, /const choicePanels = \[/);
+  assert.match(script, /function hideChoicePanels\(except = null\)/);
+  assert.match(script, /function revealChoicePanel\(panel\)[\s\S]*hideChoicePanels\(panel\)/);
+  assert.match(script, /function submitSearch\(kind, query\)[\s\S]*hideChoicePanels\(\)/);
+  assert.match(script, /browse-continent[^\n]*revealChoicePanel\(continentChoices\)/);
+});
+
 test('browse controls retain hidden semantics and collapse to one column on narrow screens', () => {
   const styles = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
   assert.match(styles, /\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/);
