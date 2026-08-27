@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DIAL — Blind-first internet radio</title>
-  <meta name="description" content="DIAL is a simple blind-first internet radio built around tuning, presets, memory, and WebMCP.">
+  <meta name="description" content="DIAL is a blind-first internet radio for tuning, discovering, and remembering stations.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,6 +21,7 @@
       <h2 id="now-heading">Now tuned</h2>
       <p id="station-name" class="station-name">Groove Salad</p>
       <p id="station-description" class="station-description">Ambient and downtempo beats.</p>
+      <p id="station-source" class="source">Built-in station</p>
       <p id="playback-state" class="state">Stopped</p>
     </section>
 
@@ -31,11 +32,39 @@
       <button id="back-button" type="button" disabled>Back</button>
     </section>
 
+    <section class="discovery" aria-labelledby="discovery-heading">
+      <h2 id="discovery-heading">Find stations</h2>
+      <form id="discovery-form" class="discovery-form">
+        <label for="discovery-query">Search internet radio</label>
+        <input id="discovery-query" name="query" type="search" minlength="2" required autocomplete="off">
+        <label for="discovery-kind">Search by</label>
+        <select id="discovery-kind" name="kind">
+          <option value="name">Station name</option>
+          <option value="tag">Genre or tag</option>
+          <option value="country">Country</option>
+          <option value="language">Language</option>
+        </select>
+        <button type="submit">Search stations</button>
+      </form>
+
+      <div id="discovery-panel" class="discovery-result" hidden>
+        <p id="discovery-position" class="result-position"></p>
+        <p id="discovery-name" class="result-name"></p>
+        <p id="discovery-description" class="station-description"></p>
+        <div class="controls" aria-label="Search result controls">
+          <button id="previous-result-button" type="button">Previous result</button>
+          <button id="play-result-button" type="button">Play result</button>
+          <button id="next-result-button" type="button">Next result</button>
+          <button id="clear-search-button" type="button">Clear search</button>
+        </div>
+      </div>
+    </section>
+
     <section class="shuffle" aria-labelledby="shuffle-heading">
       <h2 id="shuffle-heading">Shuffle</h2>
       <div class="controls">
         <button id="shuffle-presets-button" type="button">Shuffle presets</button>
-        <button id="shuffle-all-button" type="button">Shuffle all stations</button>
+        <button id="shuffle-all-button" type="button">Shuffle built-in stations</button>
       </div>
     </section>
 
@@ -61,24 +90,27 @@
       <summary>Keyboard shortcuts</summary>
       <dl>
         <div><dt>Space</dt><dd>Play or stop</dd></div>
-        <div><dt>Left / Right</dt><dd>Previous or next station</dd></div>
+        <div><dt>Left / Right</dt><dd>Previous or next built-in station</dd></div>
         <div><dt>1–6</dt><dd>Play preset</dd></div>
         <div><dt>Shift + 1–6</dt><dd>Save current station to preset</dd></div>
         <div><dt>S</dt><dd>Shuffle presets</dd></div>
-        <div><dt>A</dt><dd>Shuffle all stations</dd></div>
+        <div><dt>A</dt><dd>Shuffle built-in stations</dd></div>
         <div><dt>B</dt><dd>Back to previous station</dd></div>
         <div><dt>I</dt><dd>Announce current station</dd></div>
+        <div><dt>F</dt><dd>Focus station search</dd></div>
       </dl>
     </details>
 
     <p id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
     <footer>
-      <p>Demo catalogue uses public SomaFM streams. Presets stay on this device.</p>
+      <p>Built-in stations use public SomaFM streams. Discovery uses Radio Browser. Presets stay on this device.</p>
     </footer>
   </main>
 
   <audio id="audio" preload="none"></audio>
+  <script src="stations.js"></script>
+  <script src="discovery.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
