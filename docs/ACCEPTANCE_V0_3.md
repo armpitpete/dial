@@ -15,5 +15,7 @@ Exact-head candidate must pass automated validation and the following browser ch
 11. Confirm preset 4 still contains the station and remains playable.
 12. Confirm saved-station shuffle never fails when the library contains at least one valid station.
 13. Complete the library sequence using keyboard/tab navigation and screen-reader announcements.
+14. Verify a pathological directory station name does not dominate the page visually, while the full name remains present for assistive technology.
+15. Verify visible result metadata does not repeat the station name before country/language/tag details.
 
 WebMCP library-specific controls are explicitly outside this milestone.
