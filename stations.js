@@ -67,8 +67,10 @@
     if (!raw || typeof raw !== "object") return null;
     const uuid = cleanText(raw.stationuuid);
     const name = cleanText(raw.name);
-    const streamUrl = cleanText(raw.url_resolved) || cleanText(raw.url);
-    if (!uuid || !name || !/^https:\/\//i.test(streamUrl)) return null;
+    const streamUrl = [raw.url_resolved, raw.url]
+      .map(cleanText)
+      .find((value) => /^https:\/\//i.test(value)) || "";
+    if (!uuid || !name || !streamUrl) return null;
 
     const country = cleanText(raw.country);
     const language = cleanText(raw.language);
@@ -97,12 +99,15 @@
     const item = normalizeStation(station);
     if (!item) return "Unknown station.";
     const details = [];
-    if (item.country) details.push(item.country);
-    if (item.language) details.push(item.language);
-    if (item.tags.length) details.push(item.tags.slice(0, 3).join(", "));
+    if (item.description) details.push(item.description.replace(/[.\s]+$/, ""));
+    else {
+      if (item.country) details.push(item.country);
+      if (item.language) details.push(item.language);
+      if (item.tags.length) details.push(item.tags.slice(0, 3).join(", "));
+    }
     if (item.bitrate && item.codec) details.push(`${item.bitrate} kilobits ${item.codec}`);
     else if (item.codec) details.push(item.codec);
-    return details.length ? `${item.name}. ${details.join(". ")}.` : `${item.name}. ${item.description}`.trim();
+    return details.length ? `${item.name}. ${details.join(". ")}.` : `${item.name}.`;
   }
 
   return {

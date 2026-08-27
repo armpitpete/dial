@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
-const { BUILT_IN_STATIONS, normalizeStation, normalizeRadioBrowserStation, builtInByLegacyId } = require("../stations.js");
+const { BUILT_IN_STATIONS, normalizeStation, normalizeRadioBrowserStation, builtInByLegacyId, stationSummary } = require("../stations.js");
 const { buildSearchUrl, searchStations } = require("../discovery.js");
 
 test("built-in stations use canonical persistent records", () => {
@@ -33,8 +33,24 @@ test("Radio Browser records normalize to canonical stations", () => {
   assert.equal(station.codec, "MP3");
 });
 
+test("Radio Browser normalization falls back to an HTTPS raw URL", () => {
+  const station = normalizeRadioBrowserStation({
+    stationuuid: "abc-456",
+    name: "Fallback FM",
+    url_resolved: "http://resolved.invalid/stream",
+    url: "https://secure.example/stream"
+  });
+  assert.equal(station.streamUrl, "https://secure.example/stream");
+});
+
 test("insecure streams are rejected for the HTTPS app", () => {
   assert.equal(normalizeStation({ uuid: "x", name: "X", streamUrl: "http://example.test" }), null);
+});
+
+test("built-in spoken summary keeps the musical description", () => {
+  const summary = stationSummary(BUILT_IN_STATIONS[0]);
+  assert.match(summary, /Ambient and downtempo beats/);
+  assert.match(summary, /128 kilobits MP3/);
 });
 
 test("search URL requests working HTTPS stations and bounds results", () => {
