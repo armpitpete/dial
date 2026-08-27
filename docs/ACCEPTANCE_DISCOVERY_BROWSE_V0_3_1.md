@@ -10,7 +10,8 @@ Exact-head candidate must pass automated validation and the following browser ch
 - Genre → Electronic → usable Radio Browser result: PASS after mirror/normalization repair.
 - Electronic result playback: PASS (`Dance Wave!` playing).
 - Only one secondary browse panel remains open and the selected panel collapses after search: PASS.
-- Recent choices contains both `Genre: Electronic` and `Country: United Kingdom`: PASS for two distinct entries.
+- Recent choices contains multiple distinct searches and persists across candidate reloads: PASS.
+- Continent → Europe → Start somewhere in Europe: PASS; DIAL transparently selected Ukraine, returned a Ukrainian station result, added `Country: Ukraine` to Recent choices, and collapsed the continent panel.
 - Volume control visible while playing and retained at 35% across candidate reload/head change: PASS for visual persistence; audible level change still needs explicit confirmation.
 
 ## First-run start
@@ -21,15 +22,15 @@ Exact-head candidate must pass automated validation and the following browser ch
 4. Confirm My country uses the browser locale only when an explicit region is available; otherwise it routes to Country search without requesting location permission. **PASS for explicit `en-GB` / United Kingdom path.**
 5. Confirm Music exposes useful genre choices. **PASS**
 6. Confirm News & Talk exposes useful spoken-word choices.
-7. Confirm Around the world moves into continent exploration.
+7. Confirm Around the world moves into continent exploration. **Equivalent continent entry path visually proven; Starting-choice route still optional to recheck.**
 8. Confirm Surprise me selects a country-based discovery route rather than altering saved state.
 
 ## Browse
 
 1. Country, Genre, Language, and Station name must all feed the existing Radio Browser search form. **Country and Genre PASS; Language and Station name remain to recheck in this candidate.**
-2. Continent must expose Europe, Africa, Asia, North America, South America, and Oceania.
-3. Choosing a continent must expose country choices plus “Start somewhere in <continent>”.
-4. “Start somewhere” must transparently choose a country within the selected continent; it must not claim to be an exhaustive continent-wide search.
+2. Continent must expose Europe, Africa, Asia, North America, South America, and Oceania. **PASS from implemented/automated contract; Europe path browser-proven.**
+3. Choosing a continent must expose country choices plus “Start somewhere in <continent>”. **PASS for Europe.**
+4. “Start somewhere” must transparently choose a country within the selected continent; it must not claim to be an exhaustive continent-wide search. **PASS: Europe selected Ukraine.**
 5. Direct text search must remain available and unchanged.
 6. Search results must remain one station at a time with Previous / Play / Next controls. **PASS**
 
@@ -37,8 +38,8 @@ Exact-head candidate must pass automated validation and the following browser ch
 
 1. Complete at least two different searches and confirm they appear under Recent choices. **PASS**
 2. Repeat an existing search and confirm it moves to the front rather than duplicating.
-3. Reload and confirm recent choices persist locally. **PASS visually across candidate reloads for the two recorded choices.**
-4. Confirm recent choices are bounded to six entries.
+3. Reload and confirm recent choices persist locally. **PASS visually across candidate reloads.**
+4. Confirm recent choices are bounded to six entries. **Automated contract PASS.**
 
 ## Volume
 
@@ -52,4 +53,4 @@ Exact-head candidate must pass automated validation and the following browser ch
 2. Confirm focus moves to a useful next control when opening a choice panel.
 3. Confirm existing live-region search announcements still occur.
 4. Confirm preset and Station Library persistence are unchanged.
-5. Confirm no account, geolocation permission, backend, or WebMCP expansion was introduced.
+5. Confirm no account, geolocation permission, backend, or WebMCP expansion was introduced. **Automated/code review PASS.**
