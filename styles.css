@@ -32,6 +32,7 @@ html {
 }
 
 body { margin: 0; min-height: 100%; }
+[hidden] { display: none !important; }
 button, select, input { font: inherit; min-height: 48px; }
 
 button {
