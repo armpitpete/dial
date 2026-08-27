@@ -308,6 +308,11 @@ footer { margin-top: 2rem; font-size: 0.9rem; line-height: 1.5; }
   margin-bottom: 0.75rem;
 }
 
+.browse-other {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
 @media (max-width: 620px) {
   .shell { width: min(100% - 1rem, 760px); }
   .preset-grid, .search-form, .library-form { grid-template-columns: 1fr; }
