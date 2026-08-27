@@ -86,6 +86,19 @@ test('browse logic keeps one secondary choice panel open at a time and collapses
   assert.match(script, /browse-continent[^\n]*revealChoicePanel\(continentChoices\)/);
 });
 
+test('selected browse choice stays visible at the original control with accessible state', () => {
+  const script = fs.readFileSync(path.join(__dirname, '..', 'browse.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+  assert.match(script, /function setActiveChoice\(kind, query\)/);
+  assert.match(script, /button\.textContent = `\$\{label\}: \$\{term\}`/);
+  assert.match(script, /setAttribute\("aria-pressed", "true"\)/);
+  assert.match(script, /setAttribute\("aria-label", `Selected \$\{label\}: \$\{term\}`\)/);
+  assert.match(script, /classList\.add\("selected-choice"\)/);
+  assert.match(script, /clear-search-button[^\n]*clearActiveChoice/);
+  assert.match(styles, /button\.selected-choice/);
+  assert.match(styles, /--selected:\s*#ffd400/);
+});
+
 test('browse controls retain hidden semantics and collapse to one column on narrow screens', () => {
   const styles = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
   assert.match(styles, /\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/);
