@@ -34,7 +34,7 @@ Real WebMCP-capable-browser acceptance is deferred; the implementation remains p
 
 ## v0.3 — Station library
 
-**Current milestone**
+**Status: complete**
 
 Separate long-term station memory from the six rapid-access presets.
 
@@ -47,7 +47,23 @@ Separate long-term station memory from the six rapid-access presets.
 - Preserve keyboard and screen-reader operation
 - Do not expand WebMCP in this milestone
 
-Acceptance: discover or tune a station, save it to the library, leave it, find it again after reload, play it, assign it directly to preset 4, remove it from the library, and verify preset 4 is preserved.
+Acceptance completed: discover or tune a station, save it to the library, leave it, find it again after reload, assign it directly to preset 4, remove it from the library, and verify preset 4 is preserved and playable.
+
+## v0.3.1 — Discovery start and browse UX
+
+**Current milestone**
+
+Make a large station directory easy to enter without requiring a directory-style visual list.
+
+- Optional first-run starting choice; no account and no compulsory onboarding
+- Start from country, music, news/talk, around the world, surprise, or skip
+- Quick Find routes for country, genre, language, and station name
+- Continent exploration with country choices and “start somewhere” behavior
+- Recent discovery choices stored locally on this device
+- Every route feeds the existing one-result-at-a-time Radio Browser result flow
+- Keep direct text search available
+- Do not pretend that a sampled continent start is an exhaustive continent-wide station query
+- Do not expand WebMCP in this milestone
 
 ## v0.4 — Reliability and station health
 
@@ -66,6 +82,7 @@ Bounded and explainable exploration only after basic discovery is reliable.
 - Same country/language/genre
 - Something completely different
 - Not played recently
+- Consider Popular and deeper Surprise behavior using reliability-aware ranking
 
 ## v0.6 — Metadata and listening history
 

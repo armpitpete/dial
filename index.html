@@ -6,6 +6,7 @@
   <title>DIAL — Blind-first internet radio</title>
   <meta name="description" content="DIAL is a blind-first internet radio for tuning, discovering, saving, and remembering stations.">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="volume.css">
 </head>
 <body>
   <a class="skip-link" href="#radio">Skip to radio</a>
@@ -17,8 +18,21 @@
       <p class="tagline">Tune by listening, not looking.</p>
     </header>
 
+    <section id="start-panel" class="start-panel" aria-labelledby="start-heading" hidden>
+      <h2 id="start-heading" tabindex="-1">Where should we begin?</h2>
+      <p>Choose a starting direction. This is optional and stays on this device.</p>
+      <div class="choice-grid" aria-label="Starting choices">
+        <button id="start-country" type="button">Choose my country</button>
+        <button id="start-music" type="button">Music</button>
+        <button id="start-news" type="button">News &amp; Talk</button>
+        <button id="start-world" type="button">Around the world</button>
+        <button id="start-surprise" type="button">Surprise me</button>
+        <button id="start-skip" type="button">Skip for now</button>
+      </div>
+    </section>
+
     <section class="now" aria-labelledby="now-heading">
-      <h2 id="now-heading">Now tuned</h2>
+      <h2 id="now-heading" tabindex="-1">Now tuned</h2>
       <p id="station-name" class="station-name">Groove Salad</p>
       <p id="station-description" class="station-description">Ambient and downtempo beats.</p>
       <p id="station-source" class="source">Built-in station</p>
@@ -32,8 +46,59 @@
       <button id="back-button" type="button" disabled>Back</button>
     </section>
 
+    <div class="volume-control" role="group" aria-labelledby="volume-label">
+      <div class="volume-heading">
+        <label id="volume-label" for="volume-slider">Volume</label>
+        <output id="volume-value" for="volume-slider">100%</output>
+      </div>
+      <input id="volume-slider" type="range" min="0" max="100" step="5" value="100" aria-describedby="volume-value">
+    </div>
+
     <section class="discovery" aria-labelledby="discovery-heading">
       <h2 id="discovery-heading">Find stations</h2>
+
+      <div class="browse-section" aria-labelledby="find-quick-heading">
+        <h3 id="find-quick-heading">Find</h3>
+        <div class="browse-actions">
+          <button id="browse-country" type="button">Country</button>
+          <button id="browse-genre" type="button">Genre</button>
+          <button id="browse-language" type="button">Language</button>
+          <button type="button" data-search-kind="name">Station name</button>
+        </div>
+        <div id="country-panel" class="choice-panel" hidden>
+          <div id="country-choices" class="browse-actions" aria-label="Common countries"></div>
+          <button id="country-other" class="browse-other" type="button">Type another country</button>
+        </div>
+        <div id="genre-choices" class="browse-actions choice-panel" aria-label="Popular genres" hidden></div>
+        <div id="language-panel" class="choice-panel" hidden>
+          <div id="language-choices" class="browse-actions" aria-label="Common languages"></div>
+          <button id="language-other" class="browse-other" type="button">Type another language</button>
+        </div>
+        <div id="talk-choices" class="browse-actions choice-panel" aria-label="News and talk choices" hidden></div>
+      </div>
+
+      <div class="browse-section" aria-labelledby="explore-heading">
+        <h3 id="explore-heading">Explore</h3>
+        <div class="browse-actions">
+          <button id="browse-continent" type="button">Continent</button>
+          <button id="show-start-button" type="button">Starting choices</button>
+        </div>
+        <div id="continent-choices" class="browse-actions choice-panel" aria-label="Continents" hidden></div>
+        <div id="continent-panel" class="continent-panel" hidden>
+          <h4 id="continent-heading"></h4>
+          <p class="source">Choose a suggested country, or let DIAL start somewhere in this continent.</p>
+          <button id="continent-start-button" type="button">Start somewhere</button>
+          <div id="continent-country-choices" class="browse-actions continent-countries" aria-label="Suggested countries in selected continent"></div>
+          <p class="source">For another country, use Country above and type its name.</p>
+        </div>
+      </div>
+
+      <div class="browse-section recent-section" aria-labelledby="recent-heading">
+        <h3 id="recent-heading">Recent choices</h3>
+        <p id="recent-empty" class="source">No recent station searches yet.</p>
+        <div id="recent-choices" class="browse-actions" aria-label="Recent station searches"></div>
+      </div>
+
       <form id="discovery-form" class="search-form">
         <label for="discovery-query">Search internet radio</label>
         <input id="discovery-query" name="query" type="search" minlength="2" required autocomplete="off">
@@ -147,7 +212,7 @@
     <p id="status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
 
     <footer>
-      <p>Built-in stations use public SomaFM streams. Discovery uses Radio Browser. Presets and saved stations stay on this device.</p>
+      <p>Built-in stations use public SomaFM streams. Discovery uses Radio Browser. Presets, saved stations, and discovery choices stay on this device.</p>
     </footer>
   </main>
 
@@ -156,6 +221,8 @@
   <script src="discovery.js"></script>
   <script src="library.js"></script>
   <script src="app.js"></script>
+  <script src="volume.js"></script>
+  <script src="browse.js"></script>
   <script src="presentation.js"></script>
 </body>
 </html>

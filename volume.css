@@ -1,0 +1,26 @@
+.volume-control {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.volume-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-weight: 700;
+}
+
+#volume-slider {
+  width: 100%;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+#volume-value {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
