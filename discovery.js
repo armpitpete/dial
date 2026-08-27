@@ -17,10 +17,23 @@
     return kind === "tag" || kind === "language" ? term.toLocaleLowerCase() : term;
   }
 
-  function buildSearchUrl(root, query, kind = "name", limit = 20) {
+  function normalizeFilters(filters) {
+    const normalized = {};
+    if (!filters || typeof filters !== "object") return normalized;
+    for (const kind of SEARCH_KINDS) {
+      const term = normalizeSearchTerm(filters[kind], kind);
+      if (term.length >= 2) normalized[kind] = term;
+    }
+    return normalized;
+  }
+
+  function buildSearchUrl(root, query, kind = "name", limit = 20, filters = {}) {
     const safeKind = SEARCH_KINDS.includes(kind) ? kind : "name";
+    const combined = normalizeFilters(filters);
+    const term = normalizeSearchTerm(query, safeKind);
+    if (term) combined[safeKind] = term;
     const params = new URLSearchParams({
-      [safeKind]: normalizeSearchTerm(query, safeKind),
+      ...combined,
       hidebroken: "true",
       is_https: "true",
       order: "votes",
@@ -50,12 +63,15 @@
     const fetchImpl = options.fetchImpl || (typeof fetch === "function" ? fetch.bind(globalThis) : null);
     if (!fetchImpl) throw new Error("Station discovery is unavailable in this environment.");
 
+    const filters = Object.prototype.hasOwnProperty.call(options, "filters")
+      ? options.filters
+      : (typeof globalThis !== "undefined" ? globalThis.DialBrowseActiveFilters : null);
     const roots = options.roots || API_ROOTS;
     const errors = [];
     let hadSuccessfulResponse = false;
     for (const root of roots) {
       try {
-        const response = await fetchWithTimeout(buildSearchUrl(root, term, kind, options.limit || 20), fetchImpl, options.timeoutMs || 8000);
+        const response = await fetchWithTimeout(buildSearchUrl(root, term, kind, options.limit || 20, filters), fetchImpl, options.timeoutMs || 8000);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
         if (!Array.isArray(payload)) throw new Error("Invalid station-directory response.");
@@ -79,5 +95,5 @@
     throw new Error(`Station directory unavailable. ${errors.join("; ")}`);
   }
 
-  return { API_ROOTS, SEARCH_KINDS, normalizeSearchTerm, buildSearchUrl, searchStations };
+  return { API_ROOTS, SEARCH_KINDS, normalizeSearchTerm, normalizeFilters, buildSearchUrl, searchStations };
 });
