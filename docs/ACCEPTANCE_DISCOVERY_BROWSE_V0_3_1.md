@@ -17,6 +17,8 @@ Exact-head candidate must pass automated validation and the following browser ch
 - Continent → Europe → Start somewhere in Europe: PASS; DIAL transparently selected Ukraine, returned a Ukrainian station result, added `Country: Ukraine` to Recent choices, and collapsed the continent panel.
 - Selected browse state remains anchored at the original Find/Explore control and is visibly highlighted for partial-sight users (for example `Country: United Kingdom`): PASS.
 - Selected browse state also exposes programmatic pressed/selected semantics for assistive technology: automated/code-review PASS.
+- Cumulative `Country: United Kingdom` + `Genre: Electronic` filtering: PASS; both selected states remain highlighted and the returned result uses the combined filters.
+- Clear search removes the whole cumulative active filter set and both selected states: PASS.
 - Volume control visible while playing and retained at 35% across candidate reload/head change: PASS.
 - 35% is audibly quieter than 100%: PASS.
 - 0% behaves as mute while preserving radio state: PASS.
@@ -35,15 +37,15 @@ Exact-head candidate must pass automated validation and the following browser ch
 ## Browse
 
 1. Country, Genre, Language, and Station name must all feed the existing Radio Browser search form. **PASS**
-2. Country, Genre, Language, and Station name must be cumulative filters rather than mutually exclusive choices. Selecting another filter must retain previously active filters and send them together in one Radio Browser request. **AUTOMATED PASS; BROWSER RECHECK REQUIRED.**
-3. Each active filter must remain highlighted at its original top-level control, so combinations such as `Country: United Kingdom` + `Genre: Electronic` are visible without scanning down the page. **AUTOMATED PASS; BROWSER RECHECK REQUIRED.**
-4. Clear search must clear the whole active filter set and its selected presentation. **AUTOMATED PASS; BROWSER RECHECK REQUIRED.**
+2. Country, Genre, Language, and Station name must be cumulative filters rather than mutually exclusive choices. Selecting another filter must retain previously active filters and send them together in one Radio Browser request. **PASS.**
+3. Each active filter must remain highlighted at its original top-level control, so combinations such as `Country: United Kingdom` + `Genre: Electronic` are visible without scanning down the page. **PASS.**
+4. Clear search must clear the whole active filter set and its selected presentation. **PASS.**
 5. Continent must expose Europe, Africa, Asia, North America, South America, and Oceania. **PASS from automated contract; Europe path browser-proven.**
 6. Choosing a continent must expose country choices plus “Start somewhere in <continent>”. **PASS for Europe; common implementation covers all six.**
 7. “Start somewhere” must transparently choose a country within the selected continent; it must not claim to be an exhaustive continent-wide search. **PASS: Europe selected Ukraine.**
 8. Direct text search must remain available and unchanged. **PASS via station-name search.**
 9. Search results must remain one station at a time with Previous / Play / Next controls. **PASS**
-10. The active browse selection must remain visually anchored at the top-level Find/Explore control after results appear, with a strong selected state suitable for partial sight. **PASS for a single filter; cumulative visual recheck required.**
+10. The active browse selection must remain visually anchored at the top-level Find/Explore control after results appear, with a strong selected state suitable for partial sight. **PASS for single and cumulative filters.**
 
 ## Recent choices
 
