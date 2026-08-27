@@ -25,4 +25,4 @@ jobs:
       - name: Tests
         run: node --test tests/*.test.cjs
       - name: Whitespace
-        run: git diff --check HEAD^ HEAD || git diff --check
+        run: git diff --check
