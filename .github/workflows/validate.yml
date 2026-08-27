@@ -25,6 +25,7 @@ jobs:
           node --check discovery.js
           node --check library.js
           node --check app.js
+          node --check browse.js
           node --check presentation.js
       - name: Tests
         run: node --test tests/*.test.cjs
