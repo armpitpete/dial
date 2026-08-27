@@ -106,8 +106,24 @@
     const continentStartButton = document.getElementById("continent-start-button");
     const startCountryButton = document.getElementById("start-country");
     const choicePanels = [countryPanel, languagePanel, genreChoices, talkChoices, continentChoices, continentPanel].filter(Boolean);
+    const primaryChoiceButtons = {
+      country: document.getElementById("browse-country"),
+      tag: document.getElementById("browse-genre"),
+      language: document.getElementById("browse-language"),
+      name: document.querySelector('[data-search-kind="name"]')
+    };
+    const primaryChoiceLabels = {
+      country: "Country",
+      tag: "Genre",
+      language: "Language",
+      name: "Station name"
+    };
     let selectedContinent = "";
     let recents = loadRecents();
+
+    for (const button of Object.values(primaryChoiceButtons)) {
+      if (button) button.setAttribute("aria-pressed", "false");
+    }
 
     function readStorage(key) {
       try { return root.localStorage.getItem(key); } catch { return null; }
@@ -150,6 +166,30 @@
       if (except !== continentPanel) selectedContinent = "";
     }
 
+    function clearActiveChoice() {
+      for (const [kind, button] of Object.entries(primaryChoiceButtons)) {
+        if (!button) continue;
+        button.textContent = primaryChoiceLabels[kind];
+        button.setAttribute("aria-pressed", "false");
+        button.classList.remove("selected-choice");
+        button.removeAttribute("aria-label");
+        button.removeAttribute("title");
+      }
+    }
+
+    function setActiveChoice(kind, query) {
+      const button = primaryChoiceButtons[kind];
+      const label = primaryChoiceLabels[kind];
+      const term = String(query || "").trim();
+      if (!button || !label || !term) return;
+      clearActiveChoice();
+      button.textContent = `${label}: ${term}`;
+      button.setAttribute("aria-pressed", "true");
+      button.setAttribute("aria-label", `Selected ${label}: ${term}`);
+      button.title = `Selected ${label}: ${term}`;
+      button.classList.add("selected-choice");
+    }
+
     function focusSearch(kind) {
       hideChoicePanels();
       discoveryKind.value = SEARCH_KINDS.has(kind) ? kind : "name";
@@ -163,6 +203,7 @@
       hideChoicePanels();
       discoveryKind.value = safeKind;
       discoveryQuery.value = term;
+      setActiveChoice(safeKind, term);
       recents = addRecentChoice(recents, { kind: safeKind, query: term });
       saveRecents();
       renderRecents();
@@ -241,6 +282,7 @@
     document.getElementById("country-other")?.addEventListener("click", () => focusSearch("country"));
     document.getElementById("language-other")?.addEventListener("click", () => focusSearch("language"));
     document.getElementById("show-start-button")?.addEventListener("click", showStart);
+    document.getElementById("clear-search-button")?.addEventListener("click", clearActiveChoice);
 
     document.getElementById("start-music")?.addEventListener("click", () => {
       rememberStart("music");
@@ -303,6 +345,7 @@
       const kind = String(discoveryKind.value || "name");
       if (term.length < 2 || !SEARCH_KINDS.has(kind)) return;
       hideChoicePanels();
+      setActiveChoice(kind, term);
       recents = addRecentChoice(recents, { kind, query: term });
       saveRecents();
       renderRecents();
