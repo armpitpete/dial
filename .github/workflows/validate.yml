@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -23,8 +21,15 @@ jobs:
         run: |
           node --check stations.js
           node --check discovery.js
+          node --check library.js
           node --check app.js
       - name: Tests
         run: node --test tests/*.test.cjs
       - name: Whitespace
-        run: git diff --check "$(git merge-base HEAD origin/main)" HEAD
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            git diff --check "origin/${{ github.base_ref }}...HEAD"
+          else
+            git diff --check HEAD^ HEAD
+          fi

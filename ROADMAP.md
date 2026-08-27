@@ -6,7 +6,7 @@ DIAL is a blind-first internet radio for discovering, navigating, remembering, a
 
 ## v0.1 — Core radio foundation
 
-Status: complete enough to freeze feature work.
+**Status: complete**
 
 - Playback and tuning
 - Back
@@ -19,7 +19,7 @@ Status: complete enough to freeze feature work.
 
 ## v0.2 — Station discovery
 
-Current milestone.
+**Status: complete**
 
 - Canonical station model
 - Radio Browser discovery provider
@@ -30,22 +30,30 @@ Current milestone.
 - WebMCP search and result playback
 - Automated validation
 
-Acceptance: discover a non-built-in station, play it, save it to preset 4, leave it, restore it, reload DIAL, restore it again, then repeat the discovery path using keyboard/screen reader and WebMCP.
+Real WebMCP-capable-browser acceptance is deferred; the implementation remains present.
 
 ## v0.3 — Station library
 
+**Current milestone**
+
 Separate long-term station memory from the six rapid-access presets.
 
-- Save/remove station
-- Search saved stations
+- Save current station to library
+- Remove saved station
+- Search/browse saved stations
 - Shuffle saved stations
-- Assign saved station to preset
+- Assign saved station directly to any preset
+- Keep library persistence separate from preset persistence
+- Preserve keyboard and screen-reader operation
+- Do not expand WebMCP in this milestone
+
+Acceptance: discover or tune a station, save it to the library, leave it, find it again after reload, play it, assign it directly to preset 4, remove it from the library, and verify preset 4 is preserved.
 
 ## v0.4 — Reliability and station health
 
 - Failed-stream detection
 - Alternate URL/re-resolution support
-- Preserve unavailable presets
+- Preserve unavailable presets and saved stations
 - Health timestamps
 - Avoid repeatedly selecting known failures
 
