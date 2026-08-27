@@ -26,22 +26,30 @@ test("library normalizes and deduplicates canonical stations", () => {
 test("adding a station is idempotent and stores full records", () => {
   const first = addStation([], jazz);
   assert.equal(first.added, true);
+  assert.equal(first.full, false);
   assert.equal(first.library[0].streamUrl, jazz.streamUrl);
 
   const second = addStation(first.library, { ...jazz, description: "Updated description" });
   assert.equal(second.added, false);
+  assert.equal(second.full, false);
   assert.equal(second.library.length, 1);
   assert.equal(second.library[0].description, "Updated description");
 });
 
-test("new saves appear first and library remains bounded", () => {
+test("full library refuses a new save without evicting existing stations", () => {
   const items = [];
   for (let i = 0; i < MAX_LIBRARY_SIZE; i++) {
     items.push({ ...jazz, uuid: `station:${i}`, name: `Station ${i}` });
   }
+  const beforeFirst = items[0].uuid;
+  const beforeLast = items[items.length - 1].uuid;
   const result = addStation(items, BUILT_IN_STATIONS[0]);
+  assert.equal(result.added, false);
+  assert.equal(result.full, true);
   assert.equal(result.library.length, MAX_LIBRARY_SIZE);
-  assert.equal(result.library[0].uuid, BUILT_IN_STATIONS[0].uuid);
+  assert.equal(result.library[0].uuid, beforeFirst);
+  assert.equal(result.library[result.library.length - 1].uuid, beforeLast);
+  assert.equal(result.library.some((station) => station.uuid === BUILT_IN_STATIONS[0].uuid), false);
 });
 
 test("library search matches name and metadata", () => {
